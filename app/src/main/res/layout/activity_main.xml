@@ -10,13 +10,13 @@
 
     <TextView
         android:id="@+id/id_label"
-        android:text="id"
+        android:text="id: "
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
     <TextView
-        android:id="@+id/content_label"
-        android:text="conteúdo: "
+        android:id="@+id/titulo_label"
+        android:text="Título: "
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="25dp"
@@ -33,11 +33,47 @@
         android:layout_marginLeft="50dp" />
 
     <TextView
-        android:id="@+id/content_value"
-        android:text="conteúdo"
+        android:id="@+id/titulo_value"
+        android:text="título"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/content_label"
+        android:layout_alignTop="@+id/titulo_label"
         android:layout_alignLeft="@+id/id_value" />
+
+    <TextView
+        android:text="Texto: "
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/data"
+        android:layout_below="@+id/titulo_label"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="34dp" />
+
+    <TextView
+        android:text="Data: "
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/titulo"
+        android:layout_alignTop="@+id/data"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="85dp" />
+
+    <TextView
+        android:text="Texto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/texto_value"
+        android:layout_alignBaseline="@+id/data"
+        android:layout_alignBottom="@+id/data"
+        android:layout_toEndOf="@+id/id_value" />
+
+    <TextView
+        android:text="Data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/data_value"
+        android:layout_alignBaseline="@+id/titulo"
+        android:layout_alignBottom="@+id/titulo"
+        android:layout_alignStart="@+id/texto_value" />
 
 </RelativeLayout>
