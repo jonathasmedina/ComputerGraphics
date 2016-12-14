@@ -1,57 +1,40 @@
 package com.example.jonathas.computgraf;
 
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.ExceptionUtils;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.ArrayMap;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.example.jonathas.computgraf.R;
-
-import org.springframework.http.client.InterceptingClientHttpRequestFactory;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 
-public class MainActivity extends ListActivity {
+public class MainActivity extends ListActivity{
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private List<ObjJson> objJsons;
+    ArrayList<Float> vertices = new ArrayList<>();
+    JSONObject jsonObject2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,9 +43,13 @@ public class MainActivity extends ListActivity {
 
         super.onCreate(savedInstanceState);
         new DownloadJsonAsyncTask()
-                    //.execute("http://10.0.2.2:8000/API/id/1");
-                    //.execute("http://10.3.1.157/API/id/2");
-                    .execute("http://192.168.15.4/API/id/2");
+                    //.execute("http://10.0.2.2:80/API/id/3");
+                    //.execute("http://10.3.1.157/API/id/7");
+//                    .execute("http://192.168.15.4/API/id/3");
+                    .execute("http://10.6.12.69/API/id/3");
+
+
+
     }
 
     @Override
@@ -71,9 +58,9 @@ public class MainActivity extends ListActivity {
 
         ObjJson objJson= (ObjJson) l.getAdapter().getItem(position);
 
-        Intent intent = new Intent(this, InformacoesActivity.class);
-        intent.putExtra("objJson", (Serializable) objJson);
-        startActivity(intent);
+        //Intent intent = new Intent(this, InformacoesActivity.class);
+        //intent.putExtra("objJson", (Serializable) objJson);
+        //startActivity(intent);
     }
 
 
@@ -107,7 +94,7 @@ public class MainActivity extends ListActivity {
 
 
                 if (text != null) {
-                    objJsons = getObjSons(text);
+                    objJsons = getObjSons(text); //método principal, converte a string em obj
                     return objJsons;
                 }
                 else
@@ -126,10 +113,10 @@ public class MainActivity extends ListActivity {
             super.onPostExecute(result);
             dialog.dismiss();
             if (result.size() > 0) {
-                ArrayAdapter<ObjJson> adapter = new ArrayAdapter<ObjJson>(
-                        MainActivity.this,
-                        android.R.layout.simple_list_item_1, result);
-                setListAdapter(adapter);
+                //ArrayAdapter<ObjJson> adapter = new ArrayAdapter<ObjJson>(
+                  //      MainActivity.this,
+                    //    android.R.layout.simple_list_item_1, result);
+                // setListAdapter(adapter);
             } else {
                 AlertDialog.Builder builder = new AlertDialog.Builder(
                         MainActivity.this)
@@ -151,12 +138,11 @@ public class MainActivity extends ListActivity {
             //array é composto de values - ex Array [ value1, value2 ]
             //objeto é composto de string:value -ex Obj { string:value, string2:value2 }
 
-            List<ObjJson> objJsonList = new ArrayList<>(); //objetos - array do tipo da classe pojo ObjSon
+            ArrayList<ObjJson> objJsonList = new ArrayList<>(); //objetos - array do tipo da classe pojo ObjSon
             try {
-                JSONObject jsonObject2= new JSONObject(text); //objJsons - jsonString convertido em Json
+                jsonObject2 = new JSONObject(text); //objJsons - jsonString convertido em Json
                 JSONObject jsonObject; //objJson - objeto JSON - a cada instancia da string cria um
                 int j = jsonObject2.length();
-
 
                 //for (int i = 0; i < jsonObject2.length(); i++) { //para mais de um objeto
                 //o for atualmente está percorrendo cada um dos campos do mesmo objeto
@@ -173,28 +159,29 @@ public class MainActivity extends ListActivity {
                 objJson.setNumberOfTriangles(Integer.parseInt(jsonObject2.getString("numberOfTriangles")));
                 objJson.setNumberOfColors(Integer.parseInt(jsonObject2.getString("numberOfColors")));
 
-                JSONArray jsonArray = new JSONArray();
-                jsonArray = (jsonObject2.getJSONArray("vertices"));
-                //Map map;
-
-
-
-               /* String c = (jsonObject2.getString("colors"));
-                String[] cArray = new String[] {c};
-                Float x[] = new Float[10];
-                float y;
-                y = Float.parseFloat(c);*/
-
-
-//                objJson.setColors(x);
+                //recupera vértices (está em formato array de objetos: [...{...},{...},{...}]
+                RecuperaDados recuperaDados = new RecuperaDados();
+                //objJson.setVertices(recuperaVertTriangNorm());
+                objJson.setVertices(recuperaDados.getVertices(jsonObject2));
+                objJson.setTriangles(recuperaDados.getTriangles(jsonObject2));
+                objJson.setNormals(recuperaDados.getNormals(jsonObject2));
+                objJson.setColors(recuperaDados.getColors(jsonObject2));
+                //objJson.setTriangles(recuperaVertTriangNorm());
 
                 objJsonList.add(objJson);//adiciona o objeto populado pojo na lista
 
-               // }
+                Intent intent = new Intent(getApplicationContext(), ActOpenGLES.class);
+                intent.putExtra("obj", (Serializable) objJsonList);
+                //String c = "teste";
+                //intent.putExtra("obj", c);
+                startActivity(intent);
+
+                // }
 
             } catch (JSONException e) {
                 Log.e("Erro", "Erro no parsing do JSON", e);
             }
+
             return objJsonList;
         }
 

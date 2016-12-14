@@ -1,5 +1,9 @@
 package com.example.jonathas.computgraf;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -8,7 +12,7 @@ import java.util.Date;
  */
 
 
-public class ObjJson {
+public class ObjJson implements Serializable {
 
     private String id;
     private String label;
@@ -22,14 +26,36 @@ public class ObjJson {
     private ArrayList<Float> vertices = new ArrayList<>();
 
     //ids dos vértices dos triângulos; ex triangles":[{"v0":1142,"v1":1141,"v2":1132},{"v0":1142,"v1":1132,"v2":"1132"}
-    private int triangles[];
+    private ArrayList<Integer> triangles = new ArrayList<>();
     //?private ArrayList<Float> triangles = new ArrayList<Float>();
 
     //normais - ex "normals":[{"x":"0.000000","y":"0.000000","z":"-1.000000"},{"x":"-0.707102","y":"-0.707112","z":"0.000000"},
-    private float normals[];
+    private ArrayList<Float> normals = new ArrayList<>();
 
-    private float colors[];
+    public ObjJson(){
 
+    }
+
+    protected ObjJson(Parcel in) {
+        id = in.readString();
+        label = in.readString();
+        description = in.readString();
+        numberOfVertices = in.readInt();
+        numberOfNormals = in.readInt();
+        numberOfTriangles = in.readInt();
+        numberOfColors = in.readInt();
+    }
+
+
+    public ArrayList<Float> getColors() {
+        return colors;
+    }
+
+    public void setColors(ArrayList<Float> colors) {
+        this.colors = colors;
+    }
+
+    private ArrayList<Float> colors = new ArrayList<>();
 
     public ArrayList<Float> getVertices() {
         return vertices;
@@ -39,28 +65,20 @@ public class ObjJson {
         this.vertices = vertices;
     }
 
-    public int[] getTriangles() {
+    public ArrayList<Integer> getTriangles() {
         return triangles;
     }
 
-    public void setTriangles(int[] triangles) {
+    public void setTriangles(ArrayList<Integer> triangles) {
         this.triangles = triangles;
     }
 
-    public float[] getNormals() {
+    public ArrayList<Float> getNormals() {
         return normals;
     }
 
-    public void setNormals(float[] normals) {
+    public void setNormals(ArrayList<Float> normals) {
         this.normals = normals;
-    }
-
-    public float[] getColors() {
-        return colors;
-    }
-
-    public void setColors(float[] colors) {
-        this.colors = colors;
     }
 
     public String getId() {
@@ -122,7 +140,20 @@ public class ObjJson {
 
     @Override
     public String toString() {
-        return this.id + " -- " + this.label + " -- " + this.description;
+        //return this.id + " -- " + this.label + " -- " + this.description;
+        //vertices = floatilizer(vertices);
+        String vert = vertices.toString();
+        String vert2 = triangles.toString();
+        String vert3 = colors.toString();
+        String vert4 = normals.toString();
+        return vert;
     }
+
+    public  ArrayList<Float> floatilizer(ArrayList<Float> vertices){
+
+        //vertices = Float.parseFloat()
+        return vertices;
+    }
+
 }
 

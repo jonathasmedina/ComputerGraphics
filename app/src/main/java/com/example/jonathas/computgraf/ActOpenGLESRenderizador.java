@@ -87,6 +87,8 @@ public class ActOpenGLESRenderizador extends Activity implements GLSurfaceView.R
 
     private int mNormalHandle;
 
+    private int indicesBufferHandle;
+
     /** How many bytes per float. */
     private final int mBytesPerFloat = 4;
 
@@ -108,6 +110,8 @@ public class ActOpenGLESRenderizador extends Activity implements GLSurfaceView.R
     private final int mColorDataSize = 4;
 
     private final int mNormalDataSize = 3;
+
+    private final int indicesBufferDataSize = 3;
 
     /** Used to hold a light centered on the origin in model space. We need a 4th coordinate so we can get translations to work when
      *  we multiply this by our transformation matrices. */
@@ -164,7 +168,7 @@ public class ActOpenGLESRenderizador extends Activity implements GLSurfaceView.R
 
                     }
 
-      
+
         //converter de float para short...
         indicesTriangulosS = new short[indicesTriangulosF.length];
         k = 0;
@@ -551,6 +555,7 @@ public class ActOpenGLESRenderizador extends Activity implements GLSurfaceView.R
             GLES20.glBindAttribLocation(programHandle, 0, "a_Position");
             GLES20.glBindAttribLocation(programHandle, 1, "a_Color");
             GLES20.glBindAttribLocation(programHandle, 2, "a_Normal");
+            GLES20.glBindAttribLocation(programHandle, 3, "indices");
 
             // Link the two shaders together into a program.
             GLES20.glLinkProgram(programHandle);
@@ -577,6 +582,7 @@ public class ActOpenGLESRenderizador extends Activity implements GLSurfaceView.R
         mPositionHandle = GLES20.glGetAttribLocation(programHandle, "a_Position");
         mColorHandle = GLES20.glGetAttribLocation(programHandle, "a_Color");
         mNormalHandle = GLES20.glGetAttribLocation(programHandle, "a_Normal");
+        indicesBufferHandle = GLES20.glGetAttribLocation(programHandle, "indices");
 
         // Tell OpenGL to use this program when rendering.
         GLES20.glUseProgram(programHandle);
@@ -620,10 +626,12 @@ public class ActOpenGLESRenderizador extends Activity implements GLSurfaceView.R
         mPositionHandle = GLES20.glGetAttribLocation(programHandle, "a_Position");
         mColorHandle = GLES20.glGetAttribLocation(programHandle, "a_Color");
         mNormalHandle = GLES20.glGetAttribLocation(programHandle, "a_Normal");
+        indicesBufferHandle = GLES20.glGetAttribLocation(programHandle, "indices");
+
 
 // Calculate position of the light. Rotate and then push into the distance.
         Matrix.setIdentityM(mLightModelMatrix, 0);
-        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -5.0f);
+        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);
         //Matrix.rotateM(mLightModelMatrix, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
         //Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);
 
@@ -632,7 +640,7 @@ public class ActOpenGLESRenderizador extends Activity implements GLSurfaceView.R
 
         // Draw some cubes.
         Matrix.setIdentityM(mModelMatrix, 0);
-        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -11.0f);
+        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -8.0f);
         //rotaciona em x
 //        Matrix.rotateM(mModelMatrix, 0, angleInDegrees, 1.0f, 0.0f, 0.0f);
 
@@ -672,6 +680,13 @@ public class ActOpenGLESRenderizador extends Activity implements GLSurfaceView.R
 
         GLES20.glEnableVertexAttribArray(mNormalHandle);
 
+        //inf vertices - triang
+        indicesBuffer.position(0);
+        GLES20.glVertexAttribPointer(indicesBufferHandle, indicesBufferDataSize, GLES20.GL_UNSIGNED_SHORT, false,
+                0, indicesBuffer);
+
+        GLES20.glEnableVertexAttribArray(indicesBufferHandle);
+
 
         // This multiplies the view matrix by the model matrix, and stores the result in the MVP matrix
         // (which currently contains model * view).
@@ -691,11 +706,13 @@ public class ActOpenGLESRenderizador extends Activity implements GLSurfaceView.R
         GLES20.glUniform3f(mLightPosHandle, mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
 
 //        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 48);
+        //esse
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 48);
+
 //        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 48);
 
-        //draw elements precisa do buffer com os indices
-//       GLES20.glDrawElements(GLES20.GL_TRIANGLE_FAN, indicesTriangulos.size(), GLES20.GL_SHORT, indicesBuffer);
+        //ESSE draw elements precisa do buffer com os indices
+//       GLES20.glDrawElements(GLES20.GL_TRIANGLE_FAN, k, GLES20.GL_UNSIGNED_SHORT, indicesBuffer);
     }
 
     private void drawLight()
@@ -713,7 +730,6 @@ public class ActOpenGLESRenderizador extends Activity implements GLSurfaceView.R
         Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mLightModelMatrix, 0);
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
         GLES20.glUniformMatrix4fv(pointMVPMatrixHandle, 1, false, mMVPMatrix, 0);
-
         // Draw the point.
         GLES20.glDrawArrays(GLES20.GL_POINTS, 0, 1);
 

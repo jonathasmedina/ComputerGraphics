@@ -21,8 +21,8 @@ public class InformacoesActivity extends Activity {
 
         objJson = (ObjJson) getIntent().getSerializableExtra("objJson");
 
-        id = (TextView) findViewById(R.id.id_value);
-        label = (TextView) findViewById(R.id.texto_value);
+        //id = (TextView) findViewById(R.id.id_value);
+        //label = (TextView) findViewById(R.id.texto_value);
 
         id.setText(objJson.getId());
         label.setText(objJson.getLabel());
