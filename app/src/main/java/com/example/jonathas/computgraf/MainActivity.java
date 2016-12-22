@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,7 +33,7 @@ import java.util.Scanner;
 public class MainActivity extends ListActivity{
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private List<ObjJson> objJsons;
+    List<Cena> objJsons;
     ArrayList<Float> vertices = new ArrayList<>();
     JSONObject jsonObject2;
 
@@ -44,9 +45,10 @@ public class MainActivity extends ListActivity{
         super.onCreate(savedInstanceState);
         new DownloadJsonAsyncTask()
                     //.execute("http://10.0.2.2:80/API/id/3");
-                    //.execute("http://10.3.1.157/API/id/7");
-//                    .execute("http://192.168.15.4/API/id/3");
-                    .execute("http://10.6.12.69/API/id/3");
+                    .execute("http://10.3.1.157/API/id/2");
+//                    .execute("http://192.168.15.2/API/id/2"); //9 - cat; 3 - quadrado
+//                    .execute("http://10.6.12.69/API/id/3");
+//                    .execute("http://localhost/API/id/2");
 
 
 
@@ -64,7 +66,7 @@ public class MainActivity extends ListActivity{
     }
 
 
-    public class DownloadJsonAsyncTask extends AsyncTask<String, Void, List<ObjJson>> {
+    public class DownloadJsonAsyncTask extends AsyncTask<String, Void, List<Cena>> {
         ProgressDialog dialog;
         String e2="";
         //Exibe pop-up indicando que está sendo feito o download do JSON
@@ -77,7 +79,7 @@ public class MainActivity extends ListActivity{
 
         //Acessa o serviço do JSON e retorna a lista de objetos
         @Override
-        protected List<ObjJson> doInBackground(String... params) {
+        protected List<Cena> doInBackground(String... params) {
             String urlString = params[0];
             URL url=null;
             try {
@@ -109,7 +111,7 @@ public class MainActivity extends ListActivity{
 
         //Depois de executada a chamada do serviço
         @Override
-        protected void onPostExecute(List<ObjJson> result) {
+        protected void onPostExecute(List<Cena> result) {
             super.onPostExecute(result);
             dialog.dismiss();
             if (result.size() > 0) {
@@ -128,7 +130,7 @@ public class MainActivity extends ListActivity{
         }
 
         //Retorna uma lista de objetos com as informações retornadas do JSON
-        private List<ObjJson> getObjSons(String text) { //jsonString - string com todo o resultado
+        private List<Cena> getObjSons(String text) { //jsonString - string com todo o resultado
 
             // esta string text é um OBJETO json (e não um ARRAY), pois começa com {}. deve ser jogada em um
             //objeto json, e não em um array json; isso em http://192.168.15.4/API/id/2 !!
@@ -138,7 +140,8 @@ public class MainActivity extends ListActivity{
             //array é composto de values - ex Array [ value1, value2 ]
             //objeto é composto de string:value -ex Obj { string:value, string2:value2 }
 
-            ArrayList<ObjJson> objJsonList = new ArrayList<>(); //objetos - array do tipo da classe pojo ObjSon
+            List<Cena> objJsonList = new ArrayList<>(); //objetos - array do tipo da classe pojo Cena
+
             try {
                 jsonObject2 = new JSONObject(text); //objJsons - jsonString convertido em Json
                 JSONObject jsonObject; //objJson - objeto JSON - a cada instancia da string cria um
@@ -149,34 +152,68 @@ public class MainActivity extends ListActivity{
                 //deve percorrer cada objeto por completo, e não seus campos, quando considerar tratar mais de um obj
                    // jsonObject = new JSONObject(jsonArray.getString(i));
 
-                ObjJson objJson = new ObjJson(); //instancia da minha classe, setters
+                //informações gerais da cena
+                Cena cena = new Cena();
+                cena.setLabel(jsonObject2.getString("label"));
+                cena.setId(jsonObject2.getString("id"));
+                cena.setDescription(jsonObject2.getString("description"));
 
-                objJson.setLabel(jsonObject2.getString("label"));
-                objJson.setId(jsonObject2.getString("id"));
-                objJson.setDescription(jsonObject2.getString("description"));
-                objJson.setNumberOfVertices(Integer.parseInt(jsonObject2.getString("numberOfVertices")));
-                objJson.setNumberOfNormals(Integer.parseInt(jsonObject2.getString("numberOfNormals")));
-                objJson.setNumberOfTriangles(Integer.parseInt(jsonObject2.getString("numberOfTriangles")));
-                objJson.setNumberOfColors(Integer.parseInt(jsonObject2.getString("numberOfColors")));
+                //recuperando dados da camera
+                JSONObject jsonObjectCam = jsonObject2.getJSONObject("camera");
+                ObjCamera objCamera = new ObjCamera();
+                objCamera.setAngle_view(jsonObjectCam.getInt("angle_view"));
+                objCamera.setDop(objCamera.getDop(jsonObjectCam));
+                objCamera.setPosition(objCamera.getPosition(jsonObjectCam));
+                objCamera.setVup(objCamera.getVup(jsonObjectCam));
+                cena.setObjCamera(objCamera);//adicionando o obj populado à cena;
 
+                //recuperando dados da iluminação
+                JSONObject jsonObjectLight = jsonObject2.getJSONObject("light");
+                ObjLight objLight = new ObjLight();
+                objLight.setPosition(objLight.getPosition(jsonObjectLight));
+                objLight.setColor(objLight.getColor(jsonObjectLight));
+                cena.setObjLight(objLight);
+
+                //recuperando dados do ator
+                JSONObject jsonObjectActor = jsonObject2.getJSONObject("actor");
+                ObjActor objActor = new ObjActor();
+                objActor.setNumberOfVertices(Integer.parseInt(jsonObjectActor.getString("numberOfVertices")));
+                objActor.setNumberOfNormals(Integer.parseInt(jsonObjectActor.getString("numberOfNormals")));
+                objActor.setNumberOfTriangles(Integer.parseInt(jsonObjectActor.getString("numberOfTriangles")));
+                objActor.setNumberOfColors(Integer.parseInt(jsonObjectActor.getString("numberOfColors")));
+                objActor.setNumberOfTextures(Integer.parseInt(jsonObjectActor.getString("numberOfTextures")));
                 //recupera vértices (está em formato array de objetos: [...{...},{...},{...}]
                 RecuperaDados recuperaDados = new RecuperaDados();
                 //objJson.setVertices(recuperaVertTriangNorm());
-                objJson.setVertices(recuperaDados.getVertices(jsonObject2));
-                objJson.setTriangles(recuperaDados.getTriangles(jsonObject2));
-                objJson.setNormals(recuperaDados.getNormals(jsonObject2));
-                objJson.setColors(recuperaDados.getColors(jsonObject2));
-                //objJson.setTriangles(recuperaVertTriangNorm());
+                objActor.setVertices(recuperaDados.getVertices(jsonObjectActor));
+                //triangulo com todos os dados;
+//                objActor.setTriangles(recuperaDados.getTriangles(jsonObjectActor));
+                //triangulo somente com vo,v1,v2(v);
+                objActor.setTrianglesV(recuperaDados.getTrianglesV(jsonObjectActor));
+                //triangulo somente com vn's;
+                objActor.setTrianglesVN(recuperaDados.getTrianglesVN(jsonObjectActor));
+                //triangulo somente com vt's
+//                objActor.setTrianglesVT(recuperaDados.getTrianglesVT(jsonObjectActor));
 
-                objJsonList.add(objJson);//adiciona o objeto populado pojo na lista
+                objActor.setNormals(recuperaDados.getNormals(jsonObjectActor));
+                objActor.setColors(recuperaDados.getColors(jsonObjectActor));
+                objActor.setMaterial(recuperaDados.getMaterial(jsonObjectActor));
+                objActor.setTextures(recuperaDados.getTextures(jsonObjectActor));
 
-                Intent intent = new Intent(getApplicationContext(), ActOpenGLES.class);
-                intent.putExtra("obj", (Serializable) objJsonList);
+                cena.setObjActor(objActor);
+
+                objJsonList.add(cena);
+
+               /* Intent intent = new Intent(getApplicationContext(), ActOpenGLES.class);
+                intent.putExtra("cena", cena);
                 //String c = "teste";
                 //intent.putExtra("obj", c);
                 startActivity(intent);
+*/
 
-                // }
+                final Bundle bundle = new Bundle();
+                bundle.putBinder("cena", new ObjectWrapperForBinder(cena));
+                startActivity(new Intent(getApplicationContext(), ActOpenGLES.class).putExtras(bundle));
 
             } catch (JSONException e) {
                 Log.e("Erro", "Erro no parsing do JSON", e);

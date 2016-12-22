@@ -20,7 +20,9 @@
         </activity>
         <activity android:name=".Main2Activity" />
         <activity android:name=".ActOpenGLES" />
-        <activity android:name=".ActOpenGLESRenderizador" />
+        <activity android:name=".ActOpenGLESRenderizador"
+            />
+
     </application>
 
 </manifest>

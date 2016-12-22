@@ -9,6 +9,8 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.util.DisplayMetrics;
+import android.view.MotionEvent;
 import android.widget.Toast;
 
 import java.lang.reflect.Array;
@@ -20,24 +22,37 @@ import java.util.ArrayList;
 
 public class ActOpenGLES extends Activity{
     /** Hold a reference to our GLSurfaceView */
-    private GLSurfaceView mGLSurfaceView;
+    private ActOpenGLESView mGLSurfaceView;
+
+    private ActOpenGLESRenderizadorVBO mRenderer;
+    // Offsets for touch events
+    private float mPreviousX;
+    private float mPreviousY;
+    private float mDensity;
+
+
 
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
-        //String c = "teste";
-        Intent intent = getIntent();
+//        String c = "teste";
+//        Intent intent = getIntent();
         //String d = (String) intent.getSerializableExtra("obj");
         //ArrayList<ObjJson> dados2 = (ArrayList<ObjJson>) intent.getSerializableExtra("obj");
 
-        ArrayList<ObjJson> dados = (ArrayList<ObjJson>) intent.getSerializableExtra("obj");
+        Cena cena = ((ObjectWrapperForBinder)getIntent().getExtras().getBinder("cena")).getData();
 
+
+//        ArrayList<Cena> cena = (ArrayList<Cena>) intent.getSerializableExtra("cena");
+//        String c = "teste";
        // Bundle dados = getIntent().getExtras();
         //ArrayList<ObjJson> dados2 =  dados.getParcelableArrayList("obj");
 
         super.onCreate(savedInstanceState);
 
-        mGLSurfaceView = new GLSurfaceView(this);
+        setContentView(R.layout.act);
+
+        mGLSurfaceView = (ActOpenGLESView) findViewById(R.id.gl_surface_view);
 
         // Check if the system supports OpenGL ES 2.0.
         final ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -49,8 +64,13 @@ public class ActOpenGLES extends Activity{
             // Request an OpenGL ES 2.0 compatible context.
             mGLSurfaceView.setEGLContextClientVersion(2);
 
+            final DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
             // Set the renderer to our demo renderer, defined below.
-            mGLSurfaceView.setRenderer(new ActOpenGLESRenderizador(dados, getApplicationContext()));
+            mRenderer = new ActOpenGLESRenderizadorVBO(cena, getApplicationContext());
+//            mGLSurfaceView.setRenderer(new ActOpenGLESRenderizadorVBO(cena, getApplicationContext()));
+            mGLSurfaceView.setRenderer(mRenderer, displayMetrics.density);
         }
         else
         {
@@ -58,8 +78,6 @@ public class ActOpenGLES extends Activity{
             // renderer if you wanted to support both ES 1 and ES 2.
             return;
         }
-
-        setContentView(mGLSurfaceView);
     }
 
     @Override
@@ -77,4 +95,5 @@ public class ActOpenGLES extends Activity{
         super.onPause();
         mGLSurfaceView.onPause();
     }
+
 }
