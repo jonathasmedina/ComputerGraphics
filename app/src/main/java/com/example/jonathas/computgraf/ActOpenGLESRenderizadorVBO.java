@@ -44,9 +44,12 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
     final float top = 1.0f;
     final float near = 1.0f;
     final float far = 10.0f;
+    float left;
+    float right;
 
-
-    float zoom=1;
+    float zoom = 2.5f;
+    static float m_FieldOfView = 30.0f;
+    static int m_PinchFlag = 0;
 
     ArrayList<Float> verticesData;
     ArrayList<Float> normais;
@@ -58,6 +61,7 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 //    public volatile float mDeltaY;
     public float mDeltaX;
     public float mDeltaY;
+    public float mDeltaZ;
 
     private final float[] mCurrentRotation = new float[16];
     private float[] mTemporaryMatrix = new float[16];
@@ -361,7 +365,7 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         // Position the eye behind the origin.
         final float eyeX =  0.0f;
         final float eyeY =  0.0f;
-        final float eyeZ = -0.5f; //distante - eixo z cresce para fora da tela. limite: 6
+        final float eyeZ =  2.0f; //distante - eixo z cresce para fora da tela. limite: 6
 
         // We are looking toward the distance
         final float lookX = 0.0f;
@@ -427,8 +431,8 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         // Create a new perspective projection matrix. The height will stay the same
         // while the width will vary as per aspect ratio.
         final float ratio = (float) width / height;
-        final float left = -ratio;
-        final float right = ratio;
+        left = -ratio;
+        right = ratio;
 
         Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
     }
@@ -437,6 +441,7 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
     public void onDrawFrame(GL10 glUnused)
     {
         GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
+
 
         // Do a complete rotation every 10 seconds.
         long time = SystemClock.uptimeMillis() % 10000L;
@@ -465,7 +470,6 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 
         // Desenha ator
         Matrix.setIdentityM(mModelMatrix, 0);
-//        Matrix.scaleM(mModelMatrix, 0, -1.5f, -1.5f, -1.5f);
         Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -3.0f); //func
 //        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.8f, -3.5f); //teste
 
@@ -483,6 +487,22 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         mDeltaX = 0.0f;
         mDeltaY = 0.0f;
 
+
+        //truncando min e max
+//        if(zoom <= 1.0f)
+//            zoom = 1.0f;
+//        if(zoom >= 6.0f)
+//            zoom = 6.0f;
+//        if (zoom == 0) {
+//            zoom = 2.0f;
+//        }
+//            zoom = 0.0f;
+
+        Matrix.scaleM(mModelMatrix, 0, zoom, zoom, zoom);
+//                    zoom = 1.0f;
+
+
+
         // Multiply the current rotation by the accumulated rotation, and then set the accumulated rotation to the result.
         Matrix.multiplyMM(mTemporaryMatrix, 0, mCurrentRotation, 0, mAccumulatedRotation, 0);
         System.arraycopy(mTemporaryMatrix, 0, mAccumulatedRotation, 0, 16);
@@ -490,6 +510,8 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         // Rotate the cube taking the overall rotation into account.
         Matrix.multiplyMM(mTemporaryMatrix, 0, mModelMatrix, 0, mAccumulatedRotation, 0);
         System.arraycopy(mTemporaryMatrix, 0, mModelMatrix, 0, 16);
+
+
 
       /*  Matrix.multiplyMM(mTempMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
 
@@ -702,14 +724,5 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
             }
         }
     }
-
-    public final void zoom(float mult){
-        zoom *= mult;
-        Matrix.frustumM(
-                mProjectionMatrix, 0,
-                zoom*left, zoom*right, zoom*bottom, zoom*top,
-                near, far);
-    }
-
 
 }

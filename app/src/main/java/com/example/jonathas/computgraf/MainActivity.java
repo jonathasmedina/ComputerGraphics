@@ -45,8 +45,8 @@ public class MainActivity extends ListActivity{
         super.onCreate(savedInstanceState);
         new DownloadJsonAsyncTask()
                     //.execute("http://10.0.2.2:80/API/id/3");
-                    .execute("http://10.3.1.157/API/id/2");
-//                    .execute("http://192.168.15.2/API/id/2"); //9 - cat; 3 - quadrado
+//                    .execute("http://10.3.1.157/API/id/2");
+                    .execute("http://192.168.15.2/API/id/2"); //9 - cat; 3 - quadrado
 //                    .execute("http://10.6.12.69/API/id/3");
 //                    .execute("http://localhost/API/id/2");
 
