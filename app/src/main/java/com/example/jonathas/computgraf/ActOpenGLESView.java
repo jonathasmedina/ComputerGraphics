@@ -169,9 +169,9 @@ public class ActOpenGLESView extends GLSurfaceView{
                         //acumula valores para o zoom
                         m_Scale = m_NewDist/m_OldDist;
                         if (m_Scale>m_ScaleOld)
-                            mRenderer.zoom += m_Scale/40;
+                            mRenderer.zoom += m_Scale/50;
                         else
-                            mRenderer.zoom -= m_Scale/20;
+                            mRenderer.zoom -= m_Scale/35;
 
                         m_ScaleOld = m_Scale;
                     }

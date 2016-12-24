@@ -46,7 +46,7 @@ public class MainActivity extends ListActivity{
         new DownloadJsonAsyncTask()
                     //.execute("http://10.0.2.2:80/API/id/3");
 //                    .execute("http://10.3.1.157/API/id/2");
-                    .execute("http://192.168.15.2/API/id/2"); //9 - cat; 3 - quadrado
+                    .execute("http://192.168.15.2/API/id/2");
 //                    .execute("http://10.6.12.69/API/id/3");
 //                    .execute("http://localhost/API/id/2");
 
@@ -152,6 +152,8 @@ public class MainActivity extends ListActivity{
                 //deve percorrer cada objeto por completo, e não seus campos, quando considerar tratar mais de um obj
                    // jsonObject = new JSONObject(jsonArray.getString(i));
 
+                RecuperaDados recuperaDados = new RecuperaDados();
+
                 //informações gerais da cena
                 Cena cena = new Cena();
                 cena.setLabel(jsonObject2.getString("label"));
@@ -162,16 +164,16 @@ public class MainActivity extends ListActivity{
                 JSONObject jsonObjectCam = jsonObject2.getJSONObject("camera");
                 ObjCamera objCamera = new ObjCamera();
                 objCamera.setAngle_view(jsonObjectCam.getInt("angle_view"));
-                objCamera.setDop(objCamera.getDop(jsonObjectCam));
-                objCamera.setPosition(objCamera.getPosition(jsonObjectCam));
-                objCamera.setVup(objCamera.getVup(jsonObjectCam));
+                objCamera.setDop(recuperaDados.getDop(jsonObjectCam));
+                objCamera.setPosition(recuperaDados.getPositionCam(jsonObjectCam));
+                objCamera.setVup(recuperaDados.getVup(jsonObjectCam));
                 cena.setObjCamera(objCamera);//adicionando o obj populado à cena;
 
                 //recuperando dados da iluminação
                 JSONObject jsonObjectLight = jsonObject2.getJSONObject("light");
                 ObjLight objLight = new ObjLight();
-                objLight.setPosition(objLight.getPosition(jsonObjectLight));
-                objLight.setColor(objLight.getColor(jsonObjectLight));
+                objLight.setPosition(recuperaDados.getPositionLight(jsonObjectLight));
+                objLight.setColor(recuperaDados.getColorLight(jsonObjectLight));
                 cena.setObjLight(objLight);
 
                 //recuperando dados do ator
@@ -183,7 +185,7 @@ public class MainActivity extends ListActivity{
                 objActor.setNumberOfColors(Integer.parseInt(jsonObjectActor.getString("numberOfColors")));
                 objActor.setNumberOfTextures(Integer.parseInt(jsonObjectActor.getString("numberOfTextures")));
                 //recupera vértices (está em formato array de objetos: [...{...},{...},{...}]
-                RecuperaDados recuperaDados = new RecuperaDados();
+
                 //objJson.setVertices(recuperaVertTriangNorm());
                 objActor.setVertices(recuperaDados.getVertices(jsonObjectActor));
                 //triangulo com todos os dados;
@@ -197,7 +199,7 @@ public class MainActivity extends ListActivity{
 
                 objActor.setNormals(recuperaDados.getNormals(jsonObjectActor));
                 objActor.setColors(recuperaDados.getColors(jsonObjectActor));
-                objActor.setMaterial(recuperaDados.getMaterial(jsonObjectActor));
+//                objActor.setMaterial(recuperaDados.getMaterial(jsonObjectActor));
                 objActor.setTextures(recuperaDados.getTextures(jsonObjectActor));
 
                 cena.setObjActor(objActor);

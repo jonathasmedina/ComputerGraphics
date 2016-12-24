@@ -21,6 +21,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import static android.R.attr.left;
+import static android.R.attr.positiveButtonText;
 import static android.R.attr.right;
 
 /**
@@ -33,29 +34,38 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
     private  FloatBuffer mCoresBuffer;
     private  FloatBuffer mPosicoesBuffer;
     private  FloatBuffer mVertexDataBuffer;
+    private  FloatBuffer mCubeTextureCoordinatesForPlaneBuffer;
     private ShortBuffer mIndicesBuffer;
 
+
     float[] cubePositionData2;
+    float[] texturesDataF;
     float[] normaisF;
     int[] indicesTriangulosF;
     short[] indicesTriangulosS;
-
-    final float bottom = -1.0f;
-    final float top = 1.0f;
-    final float near = 1.0f;
-    final float far = 10.0f;
-    float left;
-    float right;
 
     float zoom = 2.5f;
     static float m_FieldOfView = 30.0f;
     static int m_PinchFlag = 0;
 
     ArrayList<Float> verticesData;
+    ArrayList<Float> texturesData;
     ArrayList<Float> normais;
     ArrayList<Integer> normaisVertices;
     ArrayList<Float> cores;
     ArrayList<Integer> indicesTriangulos;
+
+    ArrayList<Float> positionCam;
+    ArrayList<Float> dop;
+    ArrayList<Float> vup;
+    int angleView;
+
+    ArrayList<Float> positionLight;
+    ArrayList<Float> colorLight;
+
+
+    float eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ, lightX, lightY, lightZ;
+
 
 //    public volatile float mDeltaX;
 //    public volatile float mDeltaY;
@@ -109,6 +119,8 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
     private int mMVMatrixHandle;
 
     private int mLightPosHandle;
+    private int mTextureUniformHandle;
+    private int mTextureCoordinateHandle;
 
     private int programHandle;
 
@@ -138,6 +150,7 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 
     /** Size of the position data in elements. */
     private final int mPositionDataSize = 3;
+    private final int mTextureCoordinateDataSize = 3;
 
     /** Offset of the color data. */
     private final int mColorOffset = 3;
@@ -164,11 +177,13 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 
     /** This is a handle to our light point program. */
     private int mPointProgramHandle;
+    private int mGrassDataHandle;
+    private int planoDataHandle;
 
-    private final int STRIDE = (mPositionDataSize + mColorDataSize + mNormalDataSize)
+    private final int STRIDE = (mPositionDataSize + mColorDataSize + mNormalDataSize + mTextureCoordinateDataSize)
             * mBytesPerFloat;
 
-    int floatsPerVertex = (mPositionDataSize+mColorDataSize+mNormalDataSize);
+    int floatsPerVertex = (mPositionDataSize+mColorDataSize+mNormalDataSize+mTextureCoordinateDataSize);
 
 //    public ActOpenGLESRenderizadorVBO(){
 //
@@ -190,7 +205,16 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         ObjLight objLight = i.getObjLight();
         ObjActor objActor = i.getObjActor();
 
+        positionCam = objCamera.getPosition();
+        dop = objCamera.getDop();
+        vup = objCamera.getVup();
+        angleView = objCamera.getAngle_view();
+
+        positionLight = objLight.getPosition();
+        colorLight = objLight.getColor();
+
         verticesData = objActor.getVertices();
+        texturesData = objActor.getTextures();
 
         //arraylist de int contendo os índices dos triangulos
         indicesTriangulos = objActor.getTrianglesV();
@@ -198,6 +222,7 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         //arraylist de float contendo as normais
         //as normais estão sendo calculadas - o tamanho do vetor contendo as posições dos vértices não coincide com a quantidade de vértices informadas
         normais = objActor.getNormals(); //os valores ..
+
 
         normaisVertices = objActor.getTrianglesVN(); //os índices das normais para cada vértice
 
@@ -211,7 +236,6 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         k = 0;
 
         for (Float f : verticesData){
-//            mVertexData[offset++] = f;
             cubePositionData2[k++] = (f != null ? f : Float.NaN);
         }
 
@@ -224,8 +248,6 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 //        df.setMaximumFractionDigits(2);
 
         for (Float j : normais){
-//            mVertexData[offset++] = j;
-//            normaisF[k++] = (j != null ? Float.parseFloat(df.format(j)) : Float.NaN);
             normaisF[k++] = (j != null ? j : Float.NaN);
         }
 
@@ -249,31 +271,39 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 
         }
 
-            final float[] cubeColorData = new float[verticesData.size()*4]; //cada vértice tem rgba
+            final float[] cubeColorData = new float[verticesData.size()*4]; //cada vértice tem rgba, por isso *4
             int ka = 0;
 
-        //sem cor = cor preta pra tudo
-        if(cores.size() == 0){
+
+        if(cores.size() == 0){//sem cor vinda do obj = definindo cor arbitrária
             for (int j = 0; j < (cubeColorData.length); j++) {
-//                mVertexData[offset++] = 0.0f; //preto
                 cubeColorData[j++] = 0.3f;
                 cubeColorData[j++] = 0.4f;
                 cubeColorData[j++] = 0.0f;
                 cubeColorData[j] = 0.3f;
             }
         }
-        else{
+        else{ //cor vinda do obj
             k = 0;
             for (float j : cores){
-//                mVertexData[offset++] = 0.0f; //branco
                 cubeColorData[k++] = j;
 
             }
         }
 
+        texturesDataF = new float[texturesData.size()*3];
+        k = 0;
+        if (texturesData.size() > 0) {
+            for (float j : texturesData) {
+                texturesDataF[k++] = j;
+            }
+
+        }
+
         indexCount = indicesTriangulosF.length;
 
         int wpos = 0;
+        int wtex = 0;
         int wnor = 0;
         int w, j = 0;
         float x, y, z;
@@ -287,34 +317,95 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
             mVertexData[j++] = y;
             mVertexData[j++] = z;
 
-                     // Cálculo das normais utilizando produto interno.
-        /*
 
-                    final float[] planeVectorX = {1f, 0f, x};
-                    final float[] planeVectorY = {0f, 1f, y};
-                    final float[] normalVector = {
-                            (planeVectorX[1] * planeVectorY[2]) - (planeVectorX[2] * planeVectorY[1]),
-                            (planeVectorX[2] * planeVectorY[0]) - (planeVectorX[0] * planeVectorY[2]),
-                            (planeVectorX[0] * planeVectorY[1]) - (planeVectorX[1] * planeVectorY[0])};
+            if (normais.size()==0) {// Cálculo das normais utilizando produto interno, se não vierem no obj
+                final float[] planeVectorX = {1f, 0f, x};
+                final float[] planeVectorY = {0f, 1f, y};
+                final float[] normalVector = {
+                        (planeVectorX[1] * planeVectorY[2]) - (planeVectorX[2] * planeVectorY[1]),
+                        (planeVectorX[2] * planeVectorY[0]) - (planeVectorX[0] * planeVectorY[2]),
+                        (planeVectorX[0] * planeVectorY[1]) - (planeVectorX[1] * planeVectorY[0])};
 
-                    // Normalize the normal
-                    final float length = Matrix.length(normalVector[0], normalVector[1], normalVector[2]);
-        */
+                // Normalize the normal
+                final float length = Matrix.length(normalVector[0], normalVector[1], normalVector[2]);
 
-//            mVertexData[j++] = normalVector[0] / length;
-//            mVertexData[j++] = normalVector[1] / length;
-//            mVertexData[j++] = normalVector[2] / length;
+                mVertexData[j++] = normalVector[0] / length;
+                mVertexData[j++] = normalVector[1] / length;
+                mVertexData[j++] = normalVector[2] / length;
+            }
+            else { // se vetor de normais não está nulo, popular com os dados do obj
+                mVertexData[j++] = normaisF[wnor++];
+                mVertexData[j++] = normaisF[wnor++];
+                mVertexData[j++] = normaisF[wnor++];
 
-            mVertexData[j++] = normaisF[wnor++];
-            mVertexData[j++] = normaisF[wnor++];
-            mVertexData[j++] = normaisF[wnor++];
+            }
 
+            //rgba
             mVertexData[j++] = cubeColorData[cor++];
             mVertexData[j++] = cubeColorData[cor++];
             mVertexData[j++] = cubeColorData[cor++];
             mVertexData[j++] = cubeColorData[cor++];
+
+            //texturas
+
+            mVertexData[j++] = texturesDataF[wtex++];
+            mVertexData[j++] = texturesDataF[wtex++];
+            mVertexData[j++] = texturesDataF[wtex++];
 
         }
+
+        final float[] textureCoordinateDataForPlane =
+                {
+                        // Front face
+                        0.0f, 0.0f,
+                        0.0f, 25.0f,
+                        25.0f, 0.0f,
+                        0.0f, 25.0f,
+                        25.0f, 25.0f,
+                        25.0f, 0.0f,
+
+                        // Right face
+                        0.0f, 0.0f,
+                        0.0f, 25.0f,
+                        25.0f, 0.0f,
+                        0.0f, 25.0f,
+                        25.0f, 25.0f,
+                        25.0f, 0.0f,
+
+                        // Back face
+                        0.0f, 0.0f,
+                        0.0f, 25.0f,
+                        25.0f, 0.0f,
+                        0.0f, 25.0f,
+                        25.0f, 25.0f,
+                        25.0f, 0.0f,
+
+                        // Left face
+                        0.0f, 0.0f,
+                        0.0f, 25.0f,
+                        25.0f, 0.0f,
+                        0.0f, 25.0f,
+                        25.0f, 25.0f,
+                        25.0f, 0.0f,
+
+                        // Top face
+                        0.0f, 0.0f,
+                        0.0f, 25.0f,
+                        25.0f, 0.0f,
+                        0.0f, 25.0f,
+                        25.0f, 25.0f,
+                        25.0f, 0.0f,
+
+                        // Bottom face
+                        0.0f, 0.0f,
+                        0.0f, 25.0f,
+                        25.0f, 0.0f,
+                        0.0f, 25.0f,
+                        25.0f, 25.0f,
+                        25.0f, 0.0f
+                };
+
+
 
         //posições: cubePositionData2;
         //normais: normaisF;
@@ -343,6 +434,10 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
                 .order(ByteOrder.nativeOrder()).asShortBuffer();
         mIndicesBuffer.put(indicesTriangulosS).position(0);
 
+        mCubeTextureCoordinatesForPlaneBuffer = ByteBuffer.allocateDirect(textureCoordinateDataForPlane.length * mBytesPerFloat)
+                .order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mCubeTextureCoordinatesForPlaneBuffer.put(textureCoordinateDataForPlane).position(0);
+
     }
     @Override
     public void onSurfaceCreated(GL10 glUnused, EGLConfig config)
@@ -363,19 +458,42 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
         // Position the eye behind the origin.
-        final float eyeX =  0.0f;
-        final float eyeY =  0.0f;
-        final float eyeZ =  2.0f; //distante - eixo z cresce para fora da tela. limite: 6
+        //rotaciona a camera, sem movê-la
+        if (positionCam != null) {
+             eyeX =  positionCam.get(0);
+             eyeY =  positionCam.get(1);
+             eyeZ =  positionCam.get(2);
+        }else{
+             eyeX =  0.0f;
+             eyeY =  0.0f;
+             eyeZ =  3.0f; //distante - eixo z cresce para fora da tela. limite: 6
+
+        }
 
         // We are looking toward the distance
-        final float lookX = 0.0f;
-        final float lookY = 0.0f;
-        final float lookZ = -5.0f;
+        //desloca a camera no eixo
+        if (dop != null) {
+            lookX = dop.get(0);
+            lookY = dop.get(1);
+            lookZ = dop.get(2);
+        }
+        else{
+            lookX = 0.0f;
+            lookY = 0.0f;
+            lookZ = -5.0f;
+        }
+
 
         // Set our up vector. This is where our head would be pointing were we holding the camera.
-        final float upX = 0.0f;
-        final float upY = 1.0f;
-        final float upZ = 0.0f;
+        if (vup != null) {
+            upX = vup.get(0);
+            upY = vup.get(1);
+            upZ = vup.get(2);
+        } else {
+             upX = 0.0f;
+             upY = 1.0f;
+             upZ = 0.0f;
+        }
 
         // Set the view matrix. This matrix can be said to represent the camera position.
         // NOTE: In OpenGL 1, a ModelView matrix is used, which is a combination of a model and
@@ -391,7 +509,7 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         final int fragmentShaderHandle = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShader);
 
         mPerVertexProgramHandle = createAndLinkProgram(vertexShaderHandle, fragmentShaderHandle,
-                new String[] {"a_Position",  "a_Color", "a_Normal", "a_Indices"});
+                new String[] {"a_Position",  "a_Color", "a_Normal", "a_TexCoordinate"});
 
         // Define a simple shader program for our point.
         final String pointVertexShader =
@@ -417,6 +535,14 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         mPointProgramHandle = createAndLinkProgram(pointVertexShaderHandle, pointFragmentShaderHandle,
                 new String[] {"a_Position"});
 
+        //leitura figura - gerando mipmap
+        mGrassDataHandle = TextureHelper.loadTexture(mContexto, R.drawable.farmhouse_texture);
+        GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+
+        //plano
+        /*planoDataHandle = TextureHelper.loadTexture(mContexto, R.drawable.planoquad);
+        GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+*/
         // Initialize the accumulated rotation matrix
         Matrix.setIdentityM(mAccumulatedRotation, 0);
 
@@ -431,10 +557,17 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         // Create a new perspective projection matrix. The height will stay the same
         // while the width will vary as per aspect ratio.
         final float ratio = (float) width / height;
-        left = -ratio;
-        right = ratio;
+        final float left = -ratio;
+        final float right = ratio;
+        final float bottom = -1.0f;
+        final float top = 1.0f;
+        final float near = 1.0f;
+        final float far = 10000.0f;
 
         Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
+
+        //camera perspectiva
+//        Matrix.perspectiveM(mProjectionMatrix, 0, angleView, ratio, near, far);
     }
 
     @Override
@@ -445,7 +578,9 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 
         // Do a complete rotation every 10 seconds.
         long time = SystemClock.uptimeMillis() % 10000L;
+        long slowTime = SystemClock.uptimeMillis() % 100000L;
         float angleInDegrees = (360.0f / 10000.0f) * ((int) time);
+        float slowAngleInDegrees = (360.0f / 100000.0f) * ((int) slowTime);
 
         // Set our per-vertex lighting program.
         GLES20.glUseProgram(mPerVertexProgramHandle);
@@ -454,16 +589,29 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mPerVertexProgramHandle, "u_MVPMatrix");
         mMVMatrixHandle = GLES20.glGetUniformLocation(mPerVertexProgramHandle, "u_MVMatrix");
         mLightPosHandle = GLES20.glGetUniformLocation(mPerVertexProgramHandle, "u_LightPos");
+        mTextureUniformHandle = GLES20.glGetUniformLocation(mPerVertexProgramHandle, "u_Texture");
         mPositionHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_Position");
         mNormalHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_Normal");
         mColorHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_Color");
+        mTextureCoordinateHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_TexCoordinate");
 //        indicesHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_Indices");
 
 // Calculate position of the light. Rotate and then push into the distance.
         Matrix.setIdentityM(mLightModelMatrix, 0);
-        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -5.0f);
-        Matrix.rotateM(mLightModelMatrix, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
-        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);
+
+        if (positionLight != null) {
+            lightX = positionLight.get(0);
+            lightY = positionLight.get(1);
+            lightZ = positionLight.get(2);
+        } else {
+            lightX = 0.0f;
+            lightY = 0.0f;
+            lightZ = -2.7f;
+        }
+        Matrix.translateM(mLightModelMatrix, 0, lightX, lightY, lightZ);
+                /*Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -5.0f);
+                Matrix.rotateM(mLightModelMatrix, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
+                Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);*/
 
         Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
         Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);
@@ -520,6 +668,21 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 //        GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, mMVPMatrix, 0);
 */
 
+              /*  // Draw a plane
+                Matrix.setIdentityM(mModelMatrix, 0);
+                Matrix.translateM(mModelMatrix, 0, 0.0f, -2.0f, -5.0f);
+                Matrix.scaleM(mModelMatrix, 0, 25.0f, 1.0f, 25.0f);
+                Matrix.rotateM(mModelMatrix, 0, slowAngleInDegrees, 0.0f, 1.0f, 0.0f);
+
+                // Set the active texture unit to texture unit 0.
+                GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+
+                // Bind the texture to this unit.
+                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, planoDataHandle);
+
+                // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
+                GLES20.glUniform1i(mTextureUniformHandle, 0);
+*/
         //desenha
         vbo_ibo_render.render();
         //luz
@@ -682,6 +845,13 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
                 GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false,
                         STRIDE, (mPositionDataSize + mNormalDataSize) * mBytesPerFloat);
                 GLES20.glEnableVertexAttribArray(mColorHandle);
+
+                // Pass in the texture coordinate information
+//                mCubeTextureCoordinatesForPlaneBuffer.position(0);
+                GLES20.glVertexAttribPointer(mTextureCoordinateHandle, mTextureCoordinateDataSize, GLES20.GL_FLOAT, false,
+                        STRIDE, (mTextureCoordinateDataSize + mPositionDataSize + mNormalDataSize) * mBytesPerFloat);
+                        // mCubeTextureCoordinatesForPlaneBuffer);
+                GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
 
                 // Draw
                 GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, ibo[0]);

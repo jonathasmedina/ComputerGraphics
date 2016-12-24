@@ -25,6 +25,11 @@ public class RecuperaDados implements Serializable{
     ArrayList<Integer> trianglesVN = new ArrayList<>();
     ArrayList<Float> normals = new ArrayList<>();
     ArrayList<Float> colors = new ArrayList<>();
+    ArrayList<Float> positionCam = new ArrayList<>();
+    ArrayList<Float> positionLight = new ArrayList<>();
+    ArrayList<Float> color = new ArrayList<>();
+    ArrayList<Float> dop = new ArrayList<>();
+    ArrayList<Float> vup = new ArrayList<>();
     private ArrayList<Float> material = new ArrayList<>();
 
     private ArrayList<Float> textures = new ArrayList<>();
@@ -177,46 +182,57 @@ public class RecuperaDados implements Serializable{
 
         JSONObject jsonObject;
         jsonObject = jsonObject2.getJSONObject("material");
-
         JSONObject jsonObject_;
-        jsonObject_ = jsonObject.getJSONObject("ka");
 
-        Float r_ka = Float.parseFloat(jsonObject_.getString("r"));
-        Float g_ka = Float.parseFloat(jsonObject_.getString("g"));
-        Float b_ka = Float.parseFloat(jsonObject_.getString("b"));
-        Float a_ka = Float.parseFloat(jsonObject_.getString("a"));
+//        if (jsonObject.get("ka")!= null){
+            jsonObject_ = jsonObject.getJSONObject("ka");
+            Float r_ka = Float.parseFloat(jsonObject_.getString("r"));
+            Float g_ka = Float.parseFloat(jsonObject_.getString("g"));
+            Float b_ka = Float.parseFloat(jsonObject_.getString("b"));
+            Float a_ka = Float.parseFloat(jsonObject_.getString("a"));
 
-        material.add(r_ka);
-        material.add(g_ka);
-        material.add(b_ka);
-        material.add(a_ka);
+            material.add(r_ka);
+            material.add(g_ka);
+            material.add(b_ka);
+            material.add(a_ka);
+//        }
 
-        jsonObject_ = jsonObject.getJSONObject("kd");
-        Float r_kd = Float.parseFloat(jsonObject_.getString("r"));
-        Float g_kd = Float.parseFloat(jsonObject_.getString("g"));
-        Float b_kd = Float.parseFloat(jsonObject_.getString("b"));
-        Float a_kd = Float.parseFloat(jsonObject_.getString("a"));
 
-        material.add(r_kd);
-        material.add(g_kd);
-        material.add(b_kd);
-        material.add(a_kd);
 
-        jsonObject_ = jsonObject.getJSONObject("ks");
-        Float r_ks = Float.parseFloat(jsonObject_.getString("r"));
-        Float g_ks = Float.parseFloat(jsonObject_.getString("g"));
-        Float b_ks = Float.parseFloat(jsonObject_.getString("b"));
-        Float a_ks = Float.parseFloat(jsonObject_.getString("a"));
+//        if (jsonObject.getJSONObject("kd")!= null){
+            jsonObject_ = jsonObject.getJSONObject("kd");
+            Float r_kd = Float.parseFloat(jsonObject_.getString("r"));
+            Float g_kd = Float.parseFloat(jsonObject_.getString("g"));
+            Float b_kd = Float.parseFloat(jsonObject_.getString("b"));
+            Float a_kd = Float.parseFloat(jsonObject_.getString("a"));
 
-        material.add(r_ks);
-        material.add(g_ks);
-        material.add(b_ks);
-        material.add(a_ks);
+            material.add(r_kd);
+            material.add(g_kd);
+            material.add(b_kd);
+            material.add(a_kd);
+//        }
+
+
+//        if (jsonObject.getJSONObject("ks")!= null){
+            jsonObject_ = jsonObject.getJSONObject("ks");
+            Float r_ks = Float.parseFloat(jsonObject_.getString("r"));
+            Float g_ks = Float.parseFloat(jsonObject_.getString("g"));
+            Float b_ks = Float.parseFloat(jsonObject_.getString("b"));
+            Float a_ks = Float.parseFloat(jsonObject_.getString("a"));
+
+            material.add(r_ks);
+            material.add(g_ks);
+            material.add(b_ks);
+            material.add(a_ks);
+//        }
 
         Float ns = Float.parseFloat(jsonObject.getString("ns"));
         Float tr = Float.parseFloat(jsonObject.getString("tr"));
-        material.add(ns);
-        material.add(tr);
+
+        if (ns!=null)
+            material.add(ns);
+        if (tr!=null)
+            material.add(tr);
 
         return material;
     }
@@ -261,6 +277,86 @@ public class RecuperaDados implements Serializable{
         }
 
         return colors;
+    }
+
+    public ArrayList<Float> getPositionCam(JSONObject arr) throws JSONException {
+
+        JSONObject jsonObject;
+        jsonObject = arr.getJSONObject("position");
+
+        Float x = Float.parseFloat(jsonObject.getString("x"));
+        Float y = Float.parseFloat(jsonObject.getString("y"));
+        Float z = Float.parseFloat(jsonObject.getString("z"));
+
+        positionCam.add(x);
+        positionCam.add(y);
+        positionCam.add(z);
+        return positionCam;
+    }
+
+    public ArrayList<Float> getDop(JSONObject arr) throws JSONException {
+
+        JSONObject jsonObject;
+        jsonObject = arr.getJSONObject("dop");
+
+        Float x = Float.parseFloat(jsonObject.getString("x"));
+        Float y = Float.parseFloat(jsonObject.getString("y"));
+        Float z = Float.parseFloat(jsonObject.getString("z"));
+
+        dop.add(x);
+        dop.add(y);
+        dop.add(z);
+        return dop;
+    }
+
+    public ArrayList<Float> getVup(JSONObject arr) throws JSONException {
+
+//        JSONArray jsonArray;
+//        jsonArray = (arr.getJSONArray("vup"));
+
+        JSONObject jsonObject;
+        jsonObject = arr.getJSONObject("vup");
+
+        Float x = Float.parseFloat(jsonObject.getString("x"));
+        Float y = Float.parseFloat(jsonObject.getString("y"));
+        Float z = Float.parseFloat(jsonObject.getString("z"));
+
+        vup.add(x);
+        vup.add(y);
+        vup.add(z);
+        return vup;
+    }
+
+    public ArrayList<Float> getPositionLight(JSONObject arr) throws JSONException {
+
+        JSONObject jsonObject;
+        jsonObject = arr.getJSONObject("position");
+
+        Float x = Float.parseFloat(jsonObject.getString("x"));
+        Float y = Float.parseFloat(jsonObject.getString("y"));
+        Float z = Float.parseFloat(jsonObject.getString("z"));
+
+        positionLight.add(x);
+        positionLight.add(y);
+        positionLight.add(z);
+        return positionLight;
+    }
+
+    public ArrayList<Float> getColorLight(JSONObject arr) throws JSONException {
+
+        JSONObject jsonObject;
+        jsonObject = arr.getJSONObject("color");
+
+        Float r = Float.parseFloat(jsonObject.getString("r"));
+        Float g = Float.parseFloat(jsonObject.getString("g"));
+        Float b = Float.parseFloat(jsonObject.getString("b"));
+        Float a = Float.parseFloat(jsonObject.getString("a"));
+
+        color.add(r);
+        color.add(g);
+        color.add(b);
+        color.add(a);
+        return color;
     }
 
 
