@@ -277,10 +277,10 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 
         if(cores.size() == 0){//sem cor vinda do obj = definindo cor arbitrária
             for (int j = 0; j < (cubeColorData.length); j++) {
-                cubeColorData[j++] = 0.3f;
-                cubeColorData[j++] = 0.4f;
-                cubeColorData[j++] = 0.0f;
-                cubeColorData[j] = 0.3f;
+                cubeColorData[j++] = 1.0f;
+                cubeColorData[j++] = 1.0f;
+                cubeColorData[j++] = 1.0f;
+                cubeColorData[j] = 1.0f;
             }
         }
         else{ //cor vinda do obj
@@ -438,6 +438,8 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
         mCubeTextureCoordinatesForPlaneBuffer.put(textureCoordinateDataForPlane).position(0);
 
+
+
     }
     @Override
     public void onSurfaceCreated(GL10 glUnused, EGLConfig config)
@@ -445,17 +447,36 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         vbo_ibo_render = new VBO_IBO_Render();
 
         // Set the background clear color to black.
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+//        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         //branco
 //        GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         //cinza
-//        GLES20.glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
+        GLES20.glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
 
         // Use culling to remove back faces.
         GLES20.glEnable(GLES20.GL_CULL_FACE);
 
         // Enable depth testing
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+
+        //teste
+        float mf_ambientLight[] =
+                {
+                        1.0f, 1.0f, 1.0f, 1.0f
+                };
+
+        float mf_ambientMaterial[] =
+                {
+                        0.64f, 0.64f, 0.64f
+                };
+
+        /*glUnused.glLightModelfv(GL10.GL_AMBIENT_AND_DIFFUSE, mf_ambientLight, 0);
+        http://stackoverflow.com/questions/24152928/glmaterialfv-is-deprecated-in-opengl-es2
+        glUnused.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_AMBIENT, ambient, 0);
+        glUnused.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_DIFFUSE, mf_ambientMaterial, 0);
+        glUnused.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_SPECULAR, specular, 0);
+        glUnused.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_SHININESS, Ns, 0);*/
+
 
         // Position the eye behind the origin.
         //rotaciona a camera, sem movê-la
@@ -585,7 +606,7 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         // Set our per-vertex lighting program.
         GLES20.glUseProgram(mPerVertexProgramHandle);
 
-        // Set program handles for cube drawing.
+        //  program handles for cube drawing.
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mPerVertexProgramHandle, "u_MVPMatrix");
         mMVMatrixHandle = GLES20.glGetUniformLocation(mPerVertexProgramHandle, "u_MVMatrix");
         mLightPosHandle = GLES20.glGetUniformLocation(mPerVertexProgramHandle, "u_LightPos");
@@ -609,9 +630,9 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
             lightZ = -2.7f;
         }
         Matrix.translateM(mLightModelMatrix, 0, lightX, lightY, lightZ);
-                /*Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -5.0f);
+                Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -5.0f);
                 Matrix.rotateM(mLightModelMatrix, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
-                Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);*/
+                Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);
 
         Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
         Matrix.multiplyMV(mLightPosInEyeSpace, 0, mViewMatrix, 0, mLightPosInWorldSpace, 0);
@@ -659,6 +680,8 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         Matrix.multiplyMM(mTemporaryMatrix, 0, mModelMatrix, 0, mAccumulatedRotation, 0);
         System.arraycopy(mTemporaryMatrix, 0, mModelMatrix, 0, 16);
 
+        //desenha obj
+        vbo_ibo_render.render();
 
 
       /*  Matrix.multiplyMM(mTempMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
@@ -678,13 +701,20 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
                 GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
 
                 // Bind the texture to this unit.
-                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, planoDataHandle);
+                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mGrassDataHandle);
 
                 // Tell the texture uniform sampler to use this texture in the shader by binding to texture unit 0.
                 GLES20.glUniform1i(mTextureUniformHandle, 0);
-*/
-        //desenha
-        vbo_ibo_render.render();
+
+                // Pass in the texture coordinate information
+                mCubeTextureCoordinatesForPlaneBuffer.position(0);
+                GLES20.glVertexAttribPointer(mTextureCoordinateHandle, 2, GLES20.GL_FLOAT, false,
+                        0, mCubeTextureCoordinatesForPlaneBuffer);
+
+                GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
+
+        //desenha plano
+        vbo_ibo_render.render();*/
         //luz
         GLES20.glUseProgram(mPointProgramHandle); // mPointProgramHandle
         drawLight();
@@ -847,11 +877,8 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
                 GLES20.glEnableVertexAttribArray(mColorHandle);
 
                 // Pass in the texture coordinate information
-//                mCubeTextureCoordinatesForPlaneBuffer.position(0);
-                GLES20.glVertexAttribPointer(mTextureCoordinateHandle, mTextureCoordinateDataSize, GLES20.GL_FLOAT, false,
-                        STRIDE, (mTextureCoordinateDataSize + mPositionDataSize + mNormalDataSize) * mBytesPerFloat);
-                        // mCubeTextureCoordinatesForPlaneBuffer);
-                GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
+////                mCubeTextureCoordinatesForPlaneBuffer.position(0);
+
 
                 // Draw
                 GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, ibo[0]);

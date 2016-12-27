@@ -42,11 +42,14 @@ public class MainActivity extends ListActivity{
 
         //System.setProperty("http.proxyHost", "http://graphics.models.com/");
 
+        Intent intent = getIntent();
+        String url = (String) intent.getSerializableExtra("url");
+
         super.onCreate(savedInstanceState);
         new DownloadJsonAsyncTask()
                     //.execute("http://10.0.2.2:80/API/id/3");
 //                    .execute("http://10.3.1.157/API/id/2");
-                    .execute("http://192.168.15.2/API/id/2");
+                    .execute(url);
 //                    .execute("http://10.6.12.69/API/id/3");
 //                    .execute("http://localhost/API/id/2");
 
@@ -60,9 +63,6 @@ public class MainActivity extends ListActivity{
 
         ObjJson objJson= (ObjJson) l.getAdapter().getItem(position);
 
-        //Intent intent = new Intent(this, InformacoesActivity.class);
-        //intent.putExtra("objJson", (Serializable) objJson);
-        //startActivity(intent);
     }
 
 
@@ -89,11 +89,9 @@ public class MainActivity extends ListActivity{
                 httpURLConnection.setReadTimeout(15000000);
                 httpURLConnection.connect();
 
-
                 InputStream response = httpURLConnection.getInputStream();
                 String text = new Scanner(response).useDelimiter("\\A").next();
                // System.out.println(text);
-
 
                 if (text != null) {
                     objJsons = getObjSons(text); //método principal, converte a string em obj
