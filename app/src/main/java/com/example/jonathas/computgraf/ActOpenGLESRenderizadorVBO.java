@@ -8,6 +8,7 @@ import android.opengl.Matrix;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
+import android.widget.TextView;
 
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
@@ -30,6 +31,9 @@ import static android.R.attr.right;
 
 public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceView.Renderer{
 
+    private boolean POSSUI_TEXTURAS;
+
+
     private  FloatBuffer mNormaisBuffer;
     private  FloatBuffer mCoresBuffer;
     private  FloatBuffer mPosicoesBuffer;
@@ -44,12 +48,18 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
     int[] indicesTriangulosF;
     short[] indicesTriangulosS;
 
-    float zoom = 2.5f;
+    float zoom = 1.0f;
     static float m_FieldOfView = 30.0f;
     static int m_PinchFlag = 0;
 
     ArrayList<Float> verticesData;
     ArrayList<Float> texturesData;
+    ArrayList<Float> materialData;
+    ArrayList<Float> materialData_Ka  = new ArrayList<>();
+    ArrayList<Float> materialData_Kd = new ArrayList<>();
+    ArrayList<Float> materialData_Ks = new ArrayList<>();
+    ArrayList<Float> materialData_Ns = new ArrayList<>();
+    ArrayList<Float> materialData_Tr = new ArrayList<>();
     ArrayList<Float> normais;
     ArrayList<Integer> normaisVertices;
     ArrayList<Float> cores;
@@ -63,6 +73,8 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
     ArrayList<Float> positionLight;
     ArrayList<Float> colorLight;
 
+
+    ActOpenGLES actOpenGLES = new ActOpenGLES();
 
     float eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ, lightX, lightY, lightZ;
 
@@ -129,6 +141,7 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 
     /** This will be used to pass in model color information. */
     private int mColorHandle;
+    private int mColorLightHandle;
 
     private int mNormalHandle;
 
@@ -184,6 +197,7 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
             * mBytesPerFloat;
 
     int floatsPerVertex = (mPositionDataSize+mColorDataSize+mNormalDataSize+mTextureCoordinateDataSize);
+    int floatsPerVertexSemTextura = (mPositionDataSize+mColorDataSize+mNormalDataSize+mTextureCoordinateDataSize);
 
 //    public ActOpenGLESRenderizadorVBO(){
 //
@@ -194,6 +208,9 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         // intent para Act -> recebe o objeto populado -> passa ele novamente na linha
         // mGLSurfaceView.setRenderer(new ActOpenGLESRenderizador(dados))para esta classe
         // Define points for equilateral triangles.
+
+
+
 
         mContexto = contexto;
         int offset = 0;
@@ -215,6 +232,27 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 
         verticesData = objActor.getVertices();
         texturesData = objActor.getTextures();
+        materialData = objActor.getMaterial();
+
+                    materialData_Ka.add(materialData.get(0));
+                    materialData_Ka.add(materialData.get(1));
+                    materialData_Ka.add(materialData.get(2));
+                    materialData_Ka.add(materialData.get(3));
+                    materialData_Kd.add(materialData.get(4));
+                    materialData_Kd.add(materialData.get(5));
+                    materialData_Kd.add(materialData.get(6));
+                    materialData_Kd.add(materialData.get(7));
+                    materialData_Ks.add(materialData.get(8));
+                    materialData_Ks.add(materialData.get(9));
+                    materialData_Ks.add(materialData.get(10));
+                    materialData_Ks.add(materialData.get(11));
+                    materialData_Ns.add(materialData.get(12));
+                    materialData_Tr.add(materialData.get(13));
+
+        if (texturesData.size() > 0) {
+            POSSUI_TEXTURAS = true;
+        } else
+            POSSUI_TEXTURAS = false;
 
         //arraylist de int contendo os índices dos triangulos
         indicesTriangulos = objActor.getTrianglesV();
@@ -277,9 +315,9 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 
         if(cores.size() == 0){//sem cor vinda do obj = definindo cor arbitrária
             for (int j = 0; j < (cubeColorData.length); j++) {
+                cubeColorData[j++] = 0.0f;
                 cubeColorData[j++] = 1.0f;
-                cubeColorData[j++] = 1.0f;
-                cubeColorData[j++] = 1.0f;
+                cubeColorData[j++] = 0.0f;
                 cubeColorData[j] = 1.0f;
             }
         }
@@ -291,14 +329,18 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
             }
         }
 
-        texturesDataF = new float[texturesData.size()*3];
-        k = 0;
-        if (texturesData.size() > 0) {
-            for (float j : texturesData) {
-                texturesDataF[k++] = j;
-            }
 
-        }
+       if (POSSUI_TEXTURAS){
+           texturesDataF = new float[texturesData.size()*3];
+           k = 0;
+           if (texturesData.size() > 0) {
+               for (float j : texturesData) {
+                   texturesDataF[k++] = j;
+               }
+
+           }
+       }
+
 
         indexCount = indicesTriangulosF.length;
 
@@ -306,8 +348,9 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         int wtex = 0;
         int wnor = 0;
         int w, j = 0;
-        float x, y, z;
         int cor = 0;
+        float x, y, z;
+
         for (w=0; w< objActor.getNumberOfVertices(); w++){ //?
             x = cubePositionData2[wpos++];
             y = cubePositionData2[wpos++];
@@ -348,9 +391,16 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 
             //texturas
 
-            mVertexData[j++] = texturesDataF[wtex++];
-            mVertexData[j++] = texturesDataF[wtex++];
-            mVertexData[j++] = texturesDataF[wtex++];
+            if (POSSUI_TEXTURAS) {
+                mVertexData[j++] = texturesDataF[wtex++];
+                mVertexData[j++] = texturesDataF[wtex++];
+                mVertexData[j++] = texturesDataF[wtex++];
+            } else {
+                mVertexData[j++] = 0;
+                mVertexData[j++] = 0;
+                mVertexData[j++] = 0;
+            }
+
 
         }
 
@@ -434,9 +484,9 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
                 .order(ByteOrder.nativeOrder()).asShortBuffer();
         mIndicesBuffer.put(indicesTriangulosS).position(0);
 
-        mCubeTextureCoordinatesForPlaneBuffer = ByteBuffer.allocateDirect(textureCoordinateDataForPlane.length * mBytesPerFloat)
-                .order(ByteOrder.nativeOrder()).asFloatBuffer();
-        mCubeTextureCoordinatesForPlaneBuffer.put(textureCoordinateDataForPlane).position(0);
+//        mCubeTextureCoordinatesForPlaneBuffer = ByteBuffer.allocateDirect(textureCoordinateDataForPlane.length * mBytesPerFloat)
+//                .order(ByteOrder.nativeOrder()).asFloatBuffer();
+//        mCubeTextureCoordinatesForPlaneBuffer.put(textureCoordinateDataForPlane).position(0);
 
 
 
@@ -483,13 +533,14 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         if (positionCam != null) {
              eyeX =  positionCam.get(0);
              eyeY =  positionCam.get(1);
-             eyeZ =  positionCam.get(2);
+             eyeZ =  positionCam.get(2) + 3.0f;
         }else{
              eyeX =  0.0f;
              eyeY =  0.0f;
              eyeZ =  3.0f; //distante - eixo z cresce para fora da tela. limite: 6
 
         }
+
 
         // We are looking toward the distance
         //desloca a camera no eixo
@@ -506,15 +557,15 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 
 
         // Set our up vector. This is where our head would be pointing were we holding the camera.
-        if (vup != null) {
-            upX = vup.get(0);
-            upY = vup.get(1);
-            upZ = vup.get(2);
-        } else {
+//        if (vup != null) {
+//            upX = vup.get(0);
+//            upY = vup.get(1);
+//            upZ = vup.get(2);
+//        } else {
              upX = 0.0f;
              upY = 1.0f;
              upZ = 0.0f;
-        }
+//        }
 
         // Set the view matrix. This matrix can be said to represent the camera position.
         // NOTE: In OpenGL 1, a ModelView matrix is used, which is a combination of a model and
@@ -529,8 +580,15 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         final int vertexShaderHandle = compileShader(GLES20.GL_VERTEX_SHADER, vertexShader);
         final int fragmentShaderHandle = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShader);
 
+        String[] stringShader;
+        if (POSSUI_TEXTURAS) {
+            stringShader = new String[] {"a_Position",  "a_Color", "a_Normal", "a_TexCoordinate"};
+        }
+        else
+            stringShader = new String[] {"a_Position",  "a_Color", "a_Normal"};
+
         mPerVertexProgramHandle = createAndLinkProgram(vertexShaderHandle, fragmentShaderHandle,
-                new String[] {"a_Position",  "a_Color", "a_Normal", "a_TexCoordinate"});
+                stringShader);
 
         // Define a simple shader program for our point.
         final String pointVertexShader =
@@ -614,7 +672,9 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         mPositionHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_Position");
         mNormalHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_Normal");
         mColorHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_Color");
-        mTextureCoordinateHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_TexCoordinate");
+        mColorLightHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_ColorLight");
+        if (POSSUI_TEXTURAS)
+            mTextureCoordinateHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_TexCoordinate");
 //        indicesHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_Indices");
 
 // Calculate position of the light. Rotate and then push into the distance.
@@ -639,7 +699,7 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 
         // Desenha ator
         Matrix.setIdentityM(mModelMatrix, 0);
-        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -3.0f); //func
+        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -4.0f); //func
 //        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.8f, -3.5f); //teste
 
                 //rotaciona em x
@@ -668,9 +728,11 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 //            zoom = 0.0f;
 
         Matrix.scaleM(mModelMatrix, 0, zoom, zoom, zoom);
+
+
 //                    zoom = 1.0f;
 
-
+//        actOpenGLES.setCamTV(eyeX, eyeY, eyeZ);
 
         // Multiply the current rotation by the accumulated rotation, and then set the accumulated rotation to the result.
         Matrix.multiplyMM(mTemporaryMatrix, 0, mCurrentRotation, 0, mAccumulatedRotation, 0);
@@ -876,6 +938,10 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
                         STRIDE, (mPositionDataSize + mNormalDataSize) * mBytesPerFloat);
                 GLES20.glEnableVertexAttribArray(mColorHandle);
 
+//                GLES20.glVertexAttribPointer(mColorLightHandle, 4, GLES20.GL_FLOAT, false,
+//                        STRIDE, (4 + mPositionDataSize + mNormalDataSize) * mBytesPerFloat);
+//                GLES20.glEnableVertexAttribArray(mColorLightHandle);
+
                 // Pass in the texture coordinate information
 ////                mCubeTextureCoordinatesForPlaneBuffer.position(0);
 
@@ -901,8 +967,10 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
                 // Pass in the light position in eye space.
                 GLES20.glUniform3f(mLightPosHandle, mLightPosInEyeSpace[0], mLightPosInEyeSpace[1], mLightPosInEyeSpace[2]);
 
+                //esse
                 GLES20.glDrawElements(GLES20.GL_TRIANGLES, indexCount, GLES20.GL_UNSIGNED_SHORT, 0);
-//            GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, indexCount, GLES20.GL_UNSIGNED_SHORT, 0);
+                //wireframe
+//                GLES20.glDrawElements(GLES20.GL_LINE_STRIP, indexCount, GLES20.GL_UNSIGNED_SHORT, 0);
 
                 GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
                 GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -920,6 +988,21 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
                 ibo[0] = 0;
             }
         }
+    }
+
+
+    public float getEyeX() {
+        return eyeX;
+    }
+
+
+    public float getEyeY() {
+        return eyeY;
+    }
+
+
+    public float getEyeZ() {
+        return eyeZ;
     }
 
 }

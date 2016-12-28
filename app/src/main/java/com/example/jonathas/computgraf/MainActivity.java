@@ -13,6 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
@@ -30,7 +31,7 @@ import android.widget.Toast;
 
 import java.util.Scanner;
 
-public class MainActivity extends ListActivity{
+public class MainActivity extends Activity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     List<Cena> objJsons;
@@ -57,13 +58,6 @@ public class MainActivity extends ListActivity{
 
     }
 
-    @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) {
-        super.onListItemClick(l, v, position, id);
-
-        ObjJson objJson= (ObjJson) l.getAdapter().getItem(position);
-
-    }
 
 
     public class DownloadJsonAsyncTask extends AsyncTask<String, Void, List<Cena>> {
@@ -197,7 +191,7 @@ public class MainActivity extends ListActivity{
 
                 objActor.setNormals(recuperaDados.getNormals(jsonObjectActor));
                 objActor.setColors(recuperaDados.getColors(jsonObjectActor));
-//                objActor.setMaterial(recuperaDados.getMaterial(jsonObjectActor));
+                objActor.setMaterial(recuperaDados.getMaterial(jsonObjectActor));
                 objActor.setTextures(recuperaDados.getTextures(jsonObjectActor));
 
                 cena.setObjActor(objActor);

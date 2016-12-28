@@ -184,7 +184,8 @@ public class RecuperaDados implements Serializable{
         jsonObject = jsonObject2.getJSONObject("material");
         JSONObject jsonObject_;
 
-//        if (jsonObject.get("ka")!= null){
+        String ka = jsonObject.getString("ka");
+        if(ka != "null") {
             jsonObject_ = jsonObject.getJSONObject("ka");
             Float r_ka = Float.parseFloat(jsonObject_.getString("r"));
             Float g_ka = Float.parseFloat(jsonObject_.getString("g"));
@@ -195,11 +196,15 @@ public class RecuperaDados implements Serializable{
             material.add(g_ka);
             material.add(b_ka);
             material.add(a_ka);
-//        }
+        }else {
+            material.add(0.0f);
+            material.add(0.0f);
+            material.add(0.0f);
+            material.add(0.0f);
+        }
 
-
-
-//        if (jsonObject.getJSONObject("kd")!= null){
+        String kd = jsonObject.getString("kd");
+        if (kd != "null") {
             jsonObject_ = jsonObject.getJSONObject("kd");
             Float r_kd = Float.parseFloat(jsonObject_.getString("r"));
             Float g_kd = Float.parseFloat(jsonObject_.getString("g"));
@@ -210,10 +215,15 @@ public class RecuperaDados implements Serializable{
             material.add(g_kd);
             material.add(b_kd);
             material.add(a_kd);
-//        }
+        } else {
+            material.add(0.0f);
+            material.add(0.0f);
+            material.add(0.0f);
+            material.add(0.0f);
+        }
 
-
-//        if (jsonObject.getJSONObject("ks")!= null){
+        String ks = jsonObject.getString("ks");
+        if(ks != "null") {
             jsonObject_ = jsonObject.getJSONObject("ks");
             Float r_ks = Float.parseFloat(jsonObject_.getString("r"));
             Float g_ks = Float.parseFloat(jsonObject_.getString("g"));
@@ -224,15 +234,26 @@ public class RecuperaDados implements Serializable{
             material.add(g_ks);
             material.add(b_ks);
             material.add(a_ks);
-//        }
+        }else {
+            material.add(0.0f);
+            material.add(0.0f);
+            material.add(0.0f);
+            material.add(0.0f);
+        }
 
         Float ns = Float.parseFloat(jsonObject.getString("ns"));
         Float tr = Float.parseFloat(jsonObject.getString("tr"));
 
         if (ns!=null)
             material.add(ns);
+        else {
+            material.add(0.0f);
+        }
         if (tr!=null)
             material.add(tr);
+        else {
+            material.add(0.0f);
+        }
 
         return material;
     }

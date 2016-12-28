@@ -11,6 +11,7 @@ import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.lang.reflect.Array;
@@ -29,8 +30,7 @@ public class ActOpenGLES extends Activity{
     private float mPreviousX;
     private float mPreviousY;
     private float mDensity;
-
-
+//    TextView camTV;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -54,6 +54,8 @@ public class ActOpenGLES extends Activity{
 
         mGLSurfaceView = (ActOpenGLESView) findViewById(R.id.gl_surface_view);
 
+//        camTV = (TextView) findViewById(R.id.textView_);
+
         // Check if the system supports OpenGL ES 2.0.
         final ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         final ConfigurationInfo configurationInfo = activityManager.getDeviceConfigurationInfo();
@@ -69,8 +71,11 @@ public class ActOpenGLES extends Activity{
 
             // Set the renderer to our demo renderer, defined below.
             mRenderer = new ActOpenGLESRenderizadorVBO(cena, getApplicationContext());
+
+
 //            mGLSurfaceView.setRenderer(new ActOpenGLESRenderizadorVBO(cena, getApplicationContext()));
             mGLSurfaceView.setRenderer(mRenderer, displayMetrics.density);
+
         }
         else
         {
@@ -95,5 +100,18 @@ public class ActOpenGLES extends Activity{
         super.onPause();
         mGLSurfaceView.onPause();
     }
+
+//    public void setCamTV(float eyeX, float eyeY, float eyeZ){
+//
+//        //altera os valores da camera exibidos na tela:
+//
+//        String eyex = Float.toString(eyeX);
+//        String eyey = Float.toString(eyeY);
+//        String eyez = Float.toString(eyeZ);
+//
+//        camTV.setText("X: " + eyex + ", Y: " + eyey + ", Z: " + eyez);
+//
+//    }
+
 
 }
