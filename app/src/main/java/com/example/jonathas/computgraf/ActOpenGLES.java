@@ -19,68 +19,53 @@ import java.util.ArrayList;
 
 /**
  * Created by Jonathas on 03/12/2016.
+ * Recebe os dados, testa compatibilidade com OpenGLES, inicia renderizador
  */
 
 public class ActOpenGLES extends Activity{
-    /** Hold a reference to our GLSurfaceView */
+
+    /** Mantém a referência para nosso GLSurfaceView */
     private ActOpenGLESView mGLSurfaceView;
 
     private ActOpenGLESRenderizadorVBO mRenderer;
-    // Offsets for touch events
-    private float mPreviousX;
-    private float mPreviousY;
-    private float mDensity;
-//    TextView camTV;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
-//        String c = "teste";
-//        Intent intent = getIntent();
-        //String d = (String) intent.getSerializableExtra("obj");
-        //ArrayList<ObjJson> dados2 = (ArrayList<ObjJson>) intent.getSerializableExtra("obj");
-
+        //recebe os dados do Bundle
         Cena cena = ((ObjectWrapperForBinder)getIntent().getExtras().getBinder("cena")).getData();
-
-
-//        ArrayList<Cena> cena = (ArrayList<Cena>) intent.getSerializableExtra("cena");
-//        String c = "teste";
-       // Bundle dados = getIntent().getExtras();
-        //ArrayList<ObjJson> dados2 =  dados.getParcelableArrayList("obj");
 
         super.onCreate(savedInstanceState);
 
+        //seta a tela com um elemento do tipo ActOpenGLESView
         setContentView(R.layout.act);
 
+        //conecta ao elemento ActOpenGLESView do XML
         mGLSurfaceView = (ActOpenGLESView) findViewById(R.id.gl_surface_view);
 
-//        camTV = (TextView) findViewById(R.id.textView_);
-
-        // Check if the system supports OpenGL ES 2.0.
+        //Verifica compatibilidade com OpenGLES
         final ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         final ConfigurationInfo configurationInfo = activityManager.getDeviceConfigurationInfo();
         final boolean supportsEs2 = configurationInfo.reqGlEsVersion >= 0x20000;
 
         if (supportsEs2)
         {
-            // Request an OpenGL ES 2.0 compatible context.
+            //Solicita um contexto compatível com a OpenGL ES 2.0
             mGLSurfaceView.setEGLContextClientVersion(2);
 
+            //Recupera dados gerais do display, como tamanho, densidade, dimensionamento da fonte (size, density, font scaling)
             final DisplayMetrics displayMetrics = new DisplayMetrics();
             getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
-            // Set the renderer to our demo renderer, defined below.
+            //Inicializa nosso renderizador, passando os dados da cena
             mRenderer = new ActOpenGLESRenderizadorVBO(cena, getApplicationContext());
 
-
-//            mGLSurfaceView.setRenderer(new ActOpenGLESRenderizadorVBO(cena, getApplicationContext()));
+            //Seta o renderizador para nosso renderizador, já iniciado
             mGLSurfaceView.setRenderer(mRenderer, displayMetrics.density);
-
         }
         else
         {
-            // This is where you could create an OpenGL ES 1.x compatible
-            // renderer if you wanted to support both ES 1 and ES 2.
+            //implementação de outra versão suportada da OpenGL ES...
             return;
         }
     }
@@ -88,7 +73,6 @@ public class ActOpenGLES extends Activity{
     @Override
     protected void onResume()
     {
-        // The activity must call the GL surface view's onResume() on activity onResume().
         super.onResume();
         mGLSurfaceView.onResume();
     }
@@ -96,22 +80,7 @@ public class ActOpenGLES extends Activity{
     @Override
     protected void onPause()
     {
-        // The activity must call the GL surface view's onPause() on activity onPause().
         super.onPause();
         mGLSurfaceView.onPause();
     }
-
-//    public void setCamTV(float eyeX, float eyeY, float eyeZ){
-//
-//        //altera os valores da camera exibidos na tela:
-//
-//        String eyex = Float.toString(eyeX);
-//        String eyey = Float.toString(eyeY);
-//        String eyez = Float.toString(eyeZ);
-//
-//        camTV.setText("X: " + eyex + ", Y: " + eyey + ", Z: " + eyez);
-//
-//    }
-
-
 }

@@ -39,11 +39,6 @@ public class RecuperaDados implements Serializable{
 
     }
 
-    protected RecuperaDados(Parcel in) {
-    }
-
-
-
     public ArrayList<Float> getVertices(JSONObject jsonObject) throws JSONException {
 
         JSONArray jsonArray;
@@ -155,8 +150,6 @@ public class RecuperaDados implements Serializable{
         }
         return trianglesVT;
     }
-
-
 
     public ArrayList<Float> getNormals(JSONObject jsonObject) throws JSONException {
 
@@ -331,9 +324,6 @@ public class RecuperaDados implements Serializable{
     }
 
     public ArrayList<Float> getVup(JSONObject arr) throws JSONException {
-
-//        JSONArray jsonArray;
-//        jsonArray = (arr.getJSONArray("vup"));
 
         JSONObject jsonObject;
         jsonObject = arr.getJSONObject("vup");

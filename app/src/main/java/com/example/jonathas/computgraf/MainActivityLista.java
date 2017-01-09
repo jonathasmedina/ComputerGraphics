@@ -33,8 +33,6 @@ import java.util.Scanner;
 
 public class MainActivityLista extends ListActivity {
 
-    private static final String[] CORES = new String[] {"Verde","Azul","Amarelo","Branco"};
-    private ArrayAdapter<String> meuAdaptador;
     private ArrayList<ListaCenas> listaCenas;
     private String url;
 
@@ -43,29 +41,118 @@ public class MainActivityLista extends ListActivity {
         super.onCreate(savedInstanceState);
         new DownloadJsonAsyncTask().execute("http://192.168.15.2/API/");
 
-//        setContentView(R.layout.content_main);
-
-//        meuAdaptador  = new ArrayAdapter(this,android.R.layout.simple_list_item_1, CORES);
-//         setListAdapter(meuAdaptador);
-
+        //recupera a lista e a habilita para Menu de Contexto
         ListView lv = getListView();
         registerForContextMenu(lv);
 
     }
 
-    @Override
-    protected void onListItemClick(ListView listView, View v, int position, long id) {
-//        super.onListItemClick(l, v, position, id);
-//        Toast.makeText(this, "Usuário selecionou a cor " + CORES[position], Toast.LENGTH_SHORT).show();
+    //classe responsável pela conexão - popular a lista de cenas
+    public class DownloadJsonAsyncTask extends AsyncTask<String, Void, ArrayList<ListaCenas>> {
+        ProgressDialog dialog;
 
-        url = listaCenas.get(position).getUrl();
+        //Exibe pop-up indicando que está sendo feito o download do JSON
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            dialog = ProgressDialog.show(MainActivityLista.this, "Aguarde",
+                    "Fazendo download das Cenas");
+        }
 
-        Intent intent = new Intent(MainActivityLista.this, MainActivity.class);
-        intent.putExtra("url", url);
-        startActivity(intent);
+        //Acessa o serviço do JSON e retorna a lista de cenas
+        @Override
+        protected ArrayList<ListaCenas> doInBackground(String... params) {
+            String urlString = params[0]; //recupera a url enviada
+            URL url;
+            try {
+                url = new URL(urlString);
+                //conecta na url
+                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                httpURLConnection.setReadTimeout(15000000);
+                httpURLConnection.connect();
+
+                //recebe o conteúdo da url e converte em uma String
+                InputStream response = httpURLConnection.getInputStream();
+                String text = new Scanner(response).useDelimiter("\\A").next();
+
+                if (text != null) {
+                    listaCenas = getCenas(text); //método principal, converte a string em obj
+                    return listaCenas;
+                } else //texto vazio
+                    return null;
+            } catch (Exception e) {
+                Log.e("Erro", "Falha ao acessar Web service", e);
+                return null;
+            }
+        }
+
+        //Depois de executada a chamada do doInBackGround
+        @Override
+        protected void onPostExecute(ArrayList<ListaCenas> result) { //retorno do doInBackGround
+            super.onPostExecute(result);
+            dialog.dismiss();
+            if (result.size() > 0) { //tem retorno - monta a lista
+                ArrayAdapter<ListaCenas> adapter = new ArrayAdapter<>(
+                        MainActivityLista.this, //contexto
+                        R.layout.activity_menu, //xml da lista
+                        result);                //conteúdo da lista
+                 setListAdapter(adapter);
+            } else {
+                AlertDialog.Builder builder = new AlertDialog.Builder(
+                        MainActivityLista.this)
+                        .setTitle("Erro")
+                        .setMessage("Não foi possível acessar as informações!!")
+                        .setPositiveButton("OK", null);
+                builder.create().show();
+            }
+        }
+
+        //Retorna uma lista de objetos com as informações retornadas do JSON
+        //Transforma a String em um ArrayList<ListaCenas>
+        private ArrayList<ListaCenas> getCenas(String text) { //jsonString - string com o resultado
+
+            ArrayList<ListaCenas> listaCenas = new ArrayList<>(); //objetos - array do tipo da classe pojo Cena
+
+
+            try {
+
+                //objeto JSONArray com o conteúdo retornado da url
+                JSONArray jsonArray = new JSONArray(text);
+
+                //percorrendo e adicionando ao objeto, cena a cena
+                for (int i = 0; jsonArray.length() > i; i++) {
+                    JSONObject item = jsonArray.getJSONObject(i);
+
+                    //..para cada cena detectada
+                    ListaCenas cenas = new ListaCenas();
+
+                    cenas.setLabel(item.getString("label"));
+                    cenas.setId(item.getString("id"));
+                    cenas.setDescription(item.getString("description"));
+                    cenas.setUrl("http://192.168.15.2/API/id/"+item.getString("id")); //alterar-ip onde o serviço está hospedado
+
+                    listaCenas.add(cenas); //add lista na lista de cenas que será retornada
+                }
+
+            } catch (JSONException e) {
+                Log.e("Erro", "Erro no parsing do JSON", e);
+            }
+            return listaCenas;
+        }
     }
 
+    //detecta qual item da lista foi clicado
+    @Override
+    protected void onListItemClick(ListView listView, View v, int position, long id) {
 
+        //recupera o atributo "url" do elemento clicado
+        url = listaCenas.get(position).getUrl();
+
+        //muda de activity, passando por parâmetro a url do elemento clicado
+        Intent intent = new Intent(MainActivityLista.this, MainActivity.class);
+        intent.putExtra("url", url);
+        startActivity(intent); //inicia a activity com o conteúdo
+    }
 
     //cria o menu de contexto - clique longo
     @Override
@@ -97,105 +184,5 @@ public class MainActivityLista extends ListActivity {
         }
         return super.onContextItemSelected(item);
     }
-
-    public class DownloadJsonAsyncTask extends AsyncTask<String, Void, ArrayList<ListaCenas>> {
-        ProgressDialog dialog;
-
-        //Exibe pop-up indicando que está sendo feito o download do JSON
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            dialog = ProgressDialog.show(MainActivityLista.this, "Aguarde",
-                    "Fazendo download das Cenas");
-        }
-
-        //Acessa o serviço do JSON e retorna a lista de cenas
-        @Override
-        protected ArrayList<ListaCenas> doInBackground(String... params) {
-            String urlString = params[0];
-            URL url = null;
-            try {
-                url = new URL(urlString);
-                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                //httpURLConnection.setConnectTimeout(15000000);
-                httpURLConnection.setReadTimeout(15000000);
-                httpURLConnection.connect();
-
-                InputStream response = httpURLConnection.getInputStream();
-                String text = new Scanner(response).useDelimiter("\\A").next();
-
-                if (text != null) {
-                    listaCenas = getCenas(text); //método principal, converte a string em obj
-                    return listaCenas;
-                } else
-                    return null;
-            } catch (Exception e) {
-                Log.e("Erro", "Falha ao acessar Web service", e);
-                return null;
-            }
-
-            //return null;
-        }
-
-        //Depois de executada a chamada do serviço
-        @Override
-        protected void onPostExecute(ArrayList<ListaCenas> result) {
-            super.onPostExecute(result);
-            dialog.dismiss();
-            if (result.size() > 0) {
-                ArrayAdapter<ListaCenas> adapter = new ArrayAdapter<>(
-                      MainActivityLista.this,
-                    R.layout.activity_menu, result);
-                 setListAdapter(adapter);
-            } else {
-                AlertDialog.Builder builder = new AlertDialog.Builder(
-                        MainActivityLista.this)
-                        .setTitle("Erro")
-                        .setMessage("Não foi possível acessar as informações!!")
-                        .setPositiveButton("OK", null);
-                builder.create().show();
-            }
-        }
-
-        //Retorna uma lista de objetos com as informações retornadas do JSON
-        private ArrayList<ListaCenas> getCenas(String text) { //jsonString - string com todo o resultado
-
-            ArrayList<ListaCenas> listaCenas = new ArrayList<>(); //objetos - array do tipo da classe pojo Cena
-
-
-            try {
-                JSONArray jsonArray = new JSONArray(text);
-
-                for (int i = 0; jsonArray.length() > i; i++) {
-                    JSONObject item = jsonArray.getJSONObject(i);
-
-                    ListaCenas cenas = new ListaCenas();
-
-                    cenas.setLabel(item.getString("label"));
-                    cenas.setId(item.getString("id"));
-                    cenas.setDescription(item.getString("description"));
-                    cenas.setUrl("http://192.168.15.2/API/id/"+item.getString("id"));
-                    //alterar - ip onde o serviço está hospedado
-
-                    listaCenas.add(cenas);
-                }
-
-//                final Bundle bundle = new Bundle();
-//                bundle.putBinder("cena", new ObjectWrapperForBinder(cena));
-//                startActivity(new Intent(getApplicationContext(), ActOpenGLES.class).putExtras(bundle));
-
-            } catch (JSONException e) {
-                Log.e("Erro", "Erro no parsing do JSON", e);
-            }
-
-            return listaCenas;
-        }
-
-    }
-
-    public void goIntent(){
-
-    }
-
 
 }

@@ -17,6 +17,7 @@ public class ObjCamera implements Serializable{
     private ArrayList<Float> vup = new ArrayList<>();
     private int angle_view;
 
+    //getters e setters
     public int getAngle_view() {
         return angle_view;
     }
@@ -25,22 +26,17 @@ public class ObjCamera implements Serializable{
         this.angle_view = angle_view;
     }
 
-
     public void setPosition(ArrayList<Float> position) {
         this.position = position;
     }
-
-
 
     public void setDop(ArrayList<Float> dop) {
         this.dop = dop;
     }
 
-
     public void setVup(ArrayList<Float> vup) {
         this.vup = vup;
     }
-
 
     public ArrayList<Float> getPosition() {
         return position;

@@ -25,8 +25,6 @@ public class ObjLight implements Serializable{
         this.color = color;
     }
 
-
-
     public void setPosition(ArrayList<Float> position) {
         this.position = position;
     }

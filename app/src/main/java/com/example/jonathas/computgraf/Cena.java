@@ -11,18 +11,19 @@ import java.util.ArrayList;
 
 public class Cena implements Serializable{
 
-        private String id;
-        private String label;
-        private String description;
-        private ObjCamera objCamera;
-        private ObjLight objLight;
-        private ObjActor objActor;
+    private String id;
+    private String label;
+    private String description;
+    private ObjCamera objCamera;
+    private ObjLight objLight;
+    private ObjActor objActor;
 
-
+    //construtor padrão
     public Cena(){
 
-        }
+    }
 
+    //getters e setters
     public String getId() {
         return id;
     }
@@ -71,6 +72,7 @@ public class Cena implements Serializable{
         this.objActor = objActor;
     }
 
+    //objeto serializável - necessário equals() e hashcode()
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
