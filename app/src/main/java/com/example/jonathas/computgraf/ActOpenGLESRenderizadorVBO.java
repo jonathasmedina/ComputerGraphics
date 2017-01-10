@@ -405,30 +405,17 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
             glUnused.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_SPECULAR, specular, 0);
             glUnused.glMaterialfv(GL10.GL_FRONT_AND_BACK, GL10.GL_SHININESS, Ns, 0);*/
 
-        //Posição do olho, atrás da origem.
-        //rotaciona a camera, sem movê-la
-        if (positionCam != null) { //se informado...
-            lookX =  positionCam.get(0);
-            lookY =  positionCam.get(1);
-            lookZ =  positionCam.get(2);
-        }else{
-            lookX   =  0.0f;
-            lookY   =  0.0f;
-            lookZ   =  -5.0f; //distante - eixo z cresce para fora da tela. limite: 6
+        //Posição do olho, na frenteatrás da origem.
+        eyeX =  positionCam.get(0);
+        eyeY =  positionCam.get(1);
+        eyeZ =  positionCam.get(2) - 0.5f;
+            if (eyeZ == 0.0) //recuo da câmera - eixo z cresce para fora da tela. limite: 6
+                eyeZ = 0.0f;
 
-        }
-
-        //desloca a camera no eixo
-        if (dop != null) { //se informado
-            eyeX  = dop.get(0);
-            eyeY  = dop.get(1);
-            eyeZ  = dop.get(2) + 0.5f;
-        }
-        else{
-            eyeX = 0.0f;
-            eyeY = 0.0f;
-            eyeZ = 3.0f;
-        }
+        //para onde olhar
+            lookX  = dop.get(0);
+            lookY  = dop.get(1);
+            lookZ  = dop.get(2) - 50.0f;
 
         // Seta o VUP
 //        if (vup != null) {
@@ -510,7 +497,7 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         final float bottom = -1.0f;
         final float top = 1.0f;
         final float near = 1.0f;
-        final float far = 10000.0f;
+        final float far = 1000.0f;
         //seta a Matriz de Projeção...
         Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
 
@@ -569,7 +556,7 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 
         // Desenha ator
         Matrix.setIdentityM(mModelMatrix, 0);
-        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -6.0f); //translação -z
+        Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -25.0f); //translação -z
 
         //Rotacionar objeto
             //rotaciona em x
