@@ -20,8 +20,8 @@ import android.view.MotionEvent;
 
 public class ActOpenGLESView extends GLSurfaceView{
 
-//    private ActOpenGLESRenderizadorVBOTex mRenderer;
-    private ActOpenGLESRenderizadorVBO mRenderer;
+    private ActOpenGLESRenderizadorVBOTex mRenderer;
+//    private ActOpenGLESRenderizadorVBO mRenderer;
 
     // Offsets para eventos de touch
     private float mPreviousX;
@@ -120,8 +120,8 @@ public class ActOpenGLESView extends GLSurfaceView{
     }
 
     // Oculta o método da superclasse. utilizado em ACTOpenGLES
-//    public void setRenderer(ActOpenGLESRenderizadorVBOTex renderer, float density)
-    public void setRenderer(ActOpenGLESRenderizadorVBO renderer, float density)
+    public void setRenderer(ActOpenGLESRenderizadorVBOTex renderer, float density)
+//    public void setRenderer(ActOpenGLESRenderizadorVBO renderer, float density)
     {
         mRenderer = renderer;
         mDensity = density;

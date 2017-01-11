@@ -153,7 +153,7 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
     private int mPointProgramHandle;
 
     //handle para a textura mipmap
-    private int mGrassDataHandle;
+    private int mTextureDataHandle;
 
     //todos os dados do vértice
     final float[] mVertexData;
@@ -279,9 +279,9 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
                 colorData[j++] = 0.478f;
                 colorData[j] = 1.0f;*/
                 colorData[j++] = 0.0f;
-                colorData[j++] = 0.027f;
-                colorData[j++] = 0.078f;
-                colorData[j] = 1.0f;
+                colorData[j++] = 0.27f;
+                colorData[j++] = 0.78f;
+                colorData[j] = 0.0f;
             }
         }
         else{ //cor vinda do obj
@@ -485,7 +485,7 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
                         + "void main()                    \n"
                         + "{                              \n"
                         + "   gl_FragColor = vec4(1.0,    \n"
-                        + "   1.0, 1.0, 1.0);             \n"
+                        + "   0.0, 0.0, 1.0);             \n"
                         + "}                              \n";
 
         //novamente, agora para o ponto de luz
@@ -495,12 +495,10 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
                 new String[] {"a_Position"});
 
         //Tratando texturas: leitura figura - gerando mipmap
-//        mGrassDataHandle = TextureHelper.loadTexture(mContexto, R.drawable.farmhouse_texture);
-            mGrassDataHandle = TextureHelper.loadTexture(mContexto, R.drawable.wood_floor_by_gnrbishop);
+        if (POSSUI_TEXTURAS) {
+            mTextureDataHandle = TextureHelper.loadTexture(mContexto, R.drawable.wood_floor_by_gnrbishop);
             GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
-
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mGrassDataHandle);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        }
 
         // Inicializa a matriz de rotação acumulada
         Matrix.setIdentityM(mAccumulatedRotation, 0);
@@ -524,8 +522,6 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
         //seta a Matriz de Projeção...
         Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
 
-        //para câmera perspectiva
-        //Matrix.perspectiveM(mProjectionMatrix, 0, angleView, ratio, near, far);
     }
 
     @Override
@@ -549,10 +545,11 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
         mPositionHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_Position");
         mNormalHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_Normal");
         mColorLightHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_ColorLight");
-        if (POSSUI_TEXTURAS) {
+        if (!POSSUI_TEXTURAS) {
             mColorHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_Color");
-            mTextureCoordinateHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_TexCoordinate");
         }
+        if (POSSUI_TEXTURAS)
+            mTextureCoordinateHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_TexCoordinate");
 
         // Calculando a posição da luz - transformações na matriz modelo
         Matrix.setIdentityM(mLightModelMatrix, 0);
@@ -610,6 +607,17 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
         Matrix.multiplyMM(mTemporaryMatrix, 0, mModelMatrix, 0, mAccumulatedRotation, 0);
         // copia a temp para a modelo
         System.arraycopy(mTemporaryMatrix, 0, mModelMatrix, 0, 16);
+
+        if (POSSUI_TEXTURAS) {
+            // Seta a unidade de textura ativa para a unidade 0.
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+
+            // Faz o "bind" da textura ao handle.
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureDataHandle);
+
+            //Informa ao sampler da textura para usar esta textura no shader.
+            GLES20.glUniform1i(mTextureUniformHandle, 0);
+        }
 
         //desenha o ator
         vbo_ibo_render.render();
@@ -770,11 +778,14 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
                 GLES20.glEnableVertexAttribArray(mNormalHandle);
 
                 if (POSSUI_TEXTURAS) {
+                    GLES20.glVertexAttribPointer(mTextureCoordinateHandle, mTextureCoordinateDataSize, GLES20.GL_FLOAT, false,
+                            STRIDE, (mPositionDataSize + mNormalDataSize) * mBytesPerFloat);
+                    GLES20.glEnableVertexAttribArray(mTextureCoordinateHandle);
+                } else {
                     GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false,
                             STRIDE, (mPositionDataSize + mNormalDataSize) * mBytesPerFloat);
                     GLES20.glEnableVertexAttribArray(mColorHandle);
                 }
-
 
                 //bind dos índices
                 GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, ibo[0]);
