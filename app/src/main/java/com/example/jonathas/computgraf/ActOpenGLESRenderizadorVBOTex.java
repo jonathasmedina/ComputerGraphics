@@ -281,7 +281,7 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
                 colorData[j++] = 0.0f;
                 colorData[j++] = 0.27f;
                 colorData[j++] = 0.78f;
-                colorData[j] = 0.0f;
+                colorData[j] = 0.5f; //0.0 100% transparente, 1.0 100% opaco
             }
         }
         else{ //cor vinda do obj
@@ -423,8 +423,6 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
         eyeX =  positionCam.get(0);
         eyeY =  positionCam.get(1);
         eyeZ =  positionCam.get(2) - 0.5f;
-            if (eyeZ == 0.0) //recuo da câmera - eixo z cresce para fora da tela. limite: 6
-                eyeZ = 0.0f;
 
         //para onde olhar
             lookX  = dop.get(0);
@@ -485,7 +483,7 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
                         + "void main()                    \n"
                         + "{                              \n"
                         + "   gl_FragColor = vec4(1.0,    \n"
-                        + "   0.0, 0.0, 1.0);             \n"
+                        + "   1.0, 1.0, 1.0);             \n"
                         + "}                              \n";
 
         //novamente, agora para o ponto de luz
@@ -566,7 +564,7 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
 
         //Trabalhar com os dados informados: Matrix.translateM(mLightModelMatrix, 0, lightX, lightY, lightZ);
         //fixa:
-        Matrix.translateM(mLightModelMatrix, 0, 0, 0, -3.7f);
+        Matrix.translateM(mLightModelMatrix, 0, 0, 0, -15.0f);
 
         //multiplica a matriz mLightPosInModelSpace pela mLightModelMatrix e armazena na mLightPosInWorldSpace
             //para converter coordenadas no espaço de câmera em globais
@@ -632,8 +630,13 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
         final int pointMVPMatrixHandle = GLES20.glGetUniformLocation(mPointProgramHandle, "u_MVPMatrix");
         final int pointPositionHandle = GLES20.glGetAttribLocation(mPointProgramHandle, "a_Position");
 
-        //Posição...
-        GLES20.glVertexAttrib3f(pointPositionHandle, mLightPosInModelSpace[0], mLightPosInModelSpace[1], mLightPosInModelSpace[2]);
+        //Posição da luz: levar em consideração posição do objeto e da câmera
+        float lightX,lightY, lightZ;
+        lightX = mLightPosInModelSpace[0];
+        lightY = mLightPosInModelSpace[1];
+        lightZ = -15.0f;
+
+        GLES20.glVertexAttrib3f(pointPositionHandle, lightX, lightY, lightZ);
 
         // Buffer Object não utilizado aqui, desabiliza vertex array para este atributo
         GLES20.glDisableVertexAttribArray(pointPositionHandle);
