@@ -5,25 +5,16 @@ import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-import android.os.Bundle;
-import android.os.SystemClock;
 import android.util.Log;
-import android.widget.TextView;
 
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
-
-import static android.R.attr.left;
-import static android.R.attr.positiveButtonText;
-import static android.R.attr.right;
 
 /**
  * Created by Jonathas on 03/12/2016.
@@ -481,7 +472,7 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 
         //Tratando texturas: leitura figura - gerando mipmap
 //        mGrassDataHandle = TextureHelper.loadTexture(mContexto, R.drawable.farmhouse_texture);
-        mGrassDataHandle = TextureHelper.loadTexture(mContexto, R.drawable.wood_floor_by_gnrbishop);
+        mGrassDataHandle = TextureHelper.loadTexture(mContexto, R.drawable.wood_texture);
         GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
 
         // Inicializa a matriz de rotação acumulada

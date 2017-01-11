@@ -499,6 +499,9 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
             mGrassDataHandle = TextureHelper.loadTexture(mContexto, R.drawable.wood_floor_by_gnrbishop);
             GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
 
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mGrassDataHandle);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+
         // Inicializa a matriz de rotação acumulada
         Matrix.setIdentityM(mAccumulatedRotation, 0);
     }
