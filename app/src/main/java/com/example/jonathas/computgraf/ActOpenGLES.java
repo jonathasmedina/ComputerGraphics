@@ -27,6 +27,7 @@ public class ActOpenGLES extends Activity{
     /** Mantém a referência para nosso GLSurfaceView */
     private ActOpenGLESView mGLSurfaceView;
 
+//    private ActOpenGLESRenderizadorVBOTex mRenderer;
     private ActOpenGLESRenderizadorVBO mRenderer;
 
     @Override
@@ -58,6 +59,7 @@ public class ActOpenGLES extends Activity{
             getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
             //Inicializa nosso renderizador, passando os dados da cena
+//            mRenderer = new ActOpenGLESRenderizadorVBOTex(cena, getApplicationContext());
             mRenderer = new ActOpenGLESRenderizadorVBO(cena, getApplicationContext());
 
             //Seta o renderizador para nosso renderizador, já iniciado

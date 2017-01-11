@@ -39,7 +39,8 @@ public class MainActivityLista extends ListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        new DownloadJsonAsyncTask().execute("http://192.168.15.2/API/");
+//        new DownloadJsonAsyncTask().execute("http://192.168.15.2/API/");
+        new DownloadJsonAsyncTask().execute("http://10.3.1.157/API/");
 
         //recupera a lista e a habilita para Menu de Contexto
         ListView lv = getListView();
@@ -129,7 +130,7 @@ public class MainActivityLista extends ListActivity {
                     cenas.setLabel(item.getString("label"));
                     cenas.setId(item.getString("id"));
                     cenas.setDescription(item.getString("description"));
-                    cenas.setUrl("http://192.168.15.2/API/id/"+item.getString("id")); //alterar-ip onde o serviço está hospedado
+                    cenas.setUrl("http://10.3.1.157/API/id/"+item.getString("id")); //alterar-ip onde o serviço está hospedado
 
                     listaCenas.add(cenas); //add lista na lista de cenas que será retornada
                 }

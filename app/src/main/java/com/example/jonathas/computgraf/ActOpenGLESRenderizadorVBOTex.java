@@ -5,36 +5,31 @@ import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-import android.os.Bundle;
-import android.os.SystemClock;
 import android.util.Log;
-import android.widget.TextView;
 
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import static android.R.attr.left;
-import static android.R.attr.positiveButtonText;
-import static android.R.attr.right;
-
 /**
  * Created by Jonathas on 03/12/2016.
  *
  * Esta classe alimenta a cena, os shaders e renderiza os elementos
  * Utiliza VBO - Vertex Buffer Object e IBO - Index Buffer Object
+ *
+ *
  */
 
-public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceView.Renderer{
+public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurfaceView.Renderer{
 
     private boolean POSSUI_TEXTURAS;
+
+    String vertexShader, fragmentShader;
 
     private  FloatBuffer mVertexDataBuffer;
     private ShortBuffer mIndicesBuffer;
@@ -160,13 +155,20 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
     //handle para a textura mipmap
     private int mGrassDataHandle;
 
-    private final int STRIDE = (mPositionDataSize + mColorDataSize + mNormalDataSize + mTextureCoordinateDataSize)
+    //todos os dados do vértice
+    final float[] mVertexData;
+
+    private int STRIDE = (mPositionDataSize + mColorDataSize + mNormalDataSize + mTextureCoordinateDataSize)
+            * mBytesPerFloat;
+
+    private final int STRIDETEX = (mPositionDataSize + mNormalDataSize + mTextureCoordinateDataSize)
             * mBytesPerFloat;
 
     int floatsPerVertex = (mPositionDataSize+mColorDataSize+mNormalDataSize+mTextureCoordinateDataSize);
+    int floatsPerVertexTex = (mPositionDataSize+mNormalDataSize+mTextureCoordinateDataSize);
 
     //construtor
-    public ActOpenGLESRenderizadorVBO(Cena cena, final Context contexto) {
+    public ActOpenGLESRenderizadorVBOTex(Cena cena, final Context contexto) {
 
         mContexto = contexto;
 
@@ -206,10 +208,17 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         materialData_Ns.add(materialData.get(12));
         materialData_Tr.add(materialData.get(13));
 
-        if (texturesData.size() > 0) {
+        if (texturesData.size() > 0) { //se tem textura, não cria com o tamanho para as cores
             POSSUI_TEXTURAS = true;
-        } else
+            mVertexData = new float[objActor.getNumberOfVertices()*floatsPerVertexTex];
+
+            STRIDE = (mPositionDataSize + mNormalDataSize + mTextureCoordinateDataSize)
+                    * mBytesPerFloat;
+
+        } else{ //se não tem textura, cria com tamanho extra para cores
+            mVertexData = new float[objActor.getNumberOfVertices()*floatsPerVertex];
             POSSUI_TEXTURAS = false;
+        }
 
         //arraylist de int contendo os índices dos triangulos
         indicesTriangulos = objActor.getTrianglesV();
@@ -224,7 +233,6 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         cores = objActor.getColors();
 
         //todos os dados dos vértices neste vetor
-        final float[] mVertexData = new float[objActor.getNumberOfVertices()*floatsPerVertex];
 
         //converte o ArrayList<Float> em float[] - posicoes dos vertices
         positionData = new float[verticesData.size()];
@@ -271,8 +279,8 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
                 colorData[j++] = 0.478f;
                 colorData[j] = 1.0f;*/
                 colorData[j++] = 0.0f;
-                colorData[j++] = 0.27f;
-                colorData[j++] = 0.78f;
+                colorData[j++] = 0.027f;
+                colorData[j++] = 0.078f;
                 colorData[j] = 1.0f;
             }
         }
@@ -337,11 +345,13 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
                 mVertexData[j++] = normaisF[wnor++];
             }
 
-            //rgba...
-            mVertexData[j++] = colorData[wcor++];
-            mVertexData[j++] = colorData[wcor++];
-            mVertexData[j++] = colorData[wcor++];
-            mVertexData[j++] = colorData[wcor++];
+            //rgba, somente se não houver textura
+            if (!POSSUI_TEXTURAS) {
+                mVertexData[j++] = colorData[wcor++];
+                mVertexData[j++] = colorData[wcor++];
+                mVertexData[j++] = colorData[wcor++];
+                mVertexData[j++] = colorData[wcor++];
+            }
 
             //texturas
             if (POSSUI_TEXTURAS) {
@@ -436,8 +446,13 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         Matrix.setLookAtM(mViewMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
 
         //Stringfy o Vertex Shader e o Fragment Shader
-        final String vertexShader = RawResourceReader.readTextFileFromRawResource(mContexto, R.raw.per_pixel_vertex_shader);
-        final String fragmentShader = RawResourceReader.readTextFileFromRawResource(mContexto, R.raw.per_pixel_fragment_shader);
+        if (POSSUI_TEXTURAS) {
+            vertexShader = RawResourceReader.readTextFileFromRawResource(mContexto, R.raw.per_pixel_vertex_shader_tex);
+            fragmentShader = RawResourceReader.readTextFileFromRawResource(mContexto, R.raw.per_pixel_fragment_shader_tex);
+        } else {
+            vertexShader = RawResourceReader.readTextFileFromRawResource(mContexto, R.raw.per_pixel_vertex_shader);
+            fragmentShader = RawResourceReader.readTextFileFromRawResource(mContexto, R.raw.per_pixel_fragment_shader);
+        }
 
         // Carrega os shaders.
         final int vertexShaderHandle = compileShader(GLES20.GL_VERTEX_SHADER, vertexShader);
@@ -445,7 +460,7 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 
         String[] stringShader;
         if (POSSUI_TEXTURAS) { //caso possua, passo a informação para o shader
-            stringShader = new String[] {"a_Position",  "a_Color", "a_Normal", "a_TexCoordinate"};
+            stringShader = new String[] {"a_Position", "a_Normal", "a_TexCoordinate"};
         }
         else
             stringShader = new String[] {"a_Position",  "a_Color", "a_Normal"};
@@ -481,8 +496,8 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
 
         //Tratando texturas: leitura figura - gerando mipmap
 //        mGrassDataHandle = TextureHelper.loadTexture(mContexto, R.drawable.farmhouse_texture);
-        mGrassDataHandle = TextureHelper.loadTexture(mContexto, R.drawable.wood_floor_by_gnrbishop);
-        GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+            mGrassDataHandle = TextureHelper.loadTexture(mContexto, R.drawable.wood_floor_by_gnrbishop);
+            GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
 
         // Inicializa a matriz de rotação acumulada
         Matrix.setIdentityM(mAccumulatedRotation, 0);
@@ -530,10 +545,11 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
         mTextureUniformHandle = GLES20.glGetUniformLocation(mPerVertexProgramHandle, "u_Texture");
         mPositionHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_Position");
         mNormalHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_Normal");
-        mColorHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_Color");
         mColorLightHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_ColorLight");
-        if (POSSUI_TEXTURAS)
+        if (POSSUI_TEXTURAS) {
+            mColorHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_Color");
             mTextureCoordinateHandle = GLES20.glGetAttribLocation(mPerVertexProgramHandle, "a_TexCoordinate");
+        }
 
         // Calculando a posição da luz - transformações na matriz modelo
         Matrix.setIdentityM(mLightModelMatrix, 0);
@@ -737,6 +753,10 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
                 //bind do vbo
                 GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, vbo[0]);
 
+                if (POSSUI_TEXTURAS) {
+                    STRIDE = STRIDETEX;
+                }
+
                 // Bind atributos
                 GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize, GLES20.GL_FLOAT, false,
                         STRIDE, 0);
@@ -746,9 +766,12 @@ public class ActOpenGLESRenderizadorVBO extends Activity implements GLSurfaceVie
                         STRIDE, mNormalDataSize * mBytesPerFloat);
                 GLES20.glEnableVertexAttribArray(mNormalHandle);
 
-                GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false,
-                        STRIDE, (mPositionDataSize + mNormalDataSize) * mBytesPerFloat);
-                GLES20.glEnableVertexAttribArray(mColorHandle);
+                if (POSSUI_TEXTURAS) {
+                    GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize, GLES20.GL_FLOAT, false,
+                            STRIDE, (mPositionDataSize + mNormalDataSize) * mBytesPerFloat);
+                    GLES20.glEnableVertexAttribArray(mColorHandle);
+                }
+
 
                 //bind dos índices
                 GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, ibo[0]);
