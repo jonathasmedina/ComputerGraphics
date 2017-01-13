@@ -6,6 +6,8 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.StrictMode;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuItem;
@@ -19,10 +21,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -41,10 +47,16 @@ public class MainActivityLista extends ListActivity {
         super.onCreate(savedInstanceState);
         new DownloadJsonAsyncTask().execute("http://192.168.15.2/API/");
 //        new DownloadJsonAsyncTask().execute("http://10.3.1.157/API/");
+//        new DownloadJsonAsyncTask().execute("http://10.3.33.172/API/");
 
         //recupera a lista e a habilita para Menu de Contexto
         ListView lv = getListView();
         registerForContextMenu(lv);
+
+        //para o download de textura
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
 
     }
 
@@ -131,6 +143,7 @@ public class MainActivityLista extends ListActivity {
                     cenas.setId(item.getString("id"));
                     cenas.setDescription(item.getString("description"));
 //                    cenas.setUrl("http://10.3.1.157/API/id/"+item.getString("id")); //alterar-ip onde o serviço está hospedado
+//                    cenas.setUrl("http://10.3.33.172/API/id/"+item.getString("id")); //alterar-ip onde o serviço está hospedado
                     cenas.setUrl("http://192.168.15.2/API/id/"+item.getString("id")); //alterar-ip onde o serviço está hospedado
 
                     listaCenas.add(cenas); //add lista na lista de cenas que será retornada

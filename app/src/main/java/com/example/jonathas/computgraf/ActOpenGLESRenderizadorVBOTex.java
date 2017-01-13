@@ -5,12 +5,22 @@ import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.os.Environment;
 import android.util.Log;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.InterruptibleChannel;
 import java.util.ArrayList;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -494,11 +504,32 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
 
         //Tratando texturas: leitura figura - gerando mipmap
         if (POSSUI_TEXTURAS) {
-            mTextureDataHandle = TextureHelper.loadTexture(mContexto, R.drawable.wood_floor_by_gnrbishop);
+            File path = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DOWNLOADS);
+            File file = new File(path, "textura12.jpg");
+
+                // Make sure the Pictures directory exists.
+                path.mkdirs();
+
+            FileInputStream is = null;
+
+            try {
+                is = new FileInputStream(file);
+//                is.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+//            is = new FileInputStream("/sdcard/test2.png");
+            BufferedInputStream  buf = new BufferedInputStream(is);
+
+            mTextureDataHandle = TextureHelper.loadTextureInputStream(is);
+//            mTextureDataHandle = TextureHelper.loadTexture(mContexto, R.drawable.barrel);
             GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
         }
 
-        // Inicializa a matriz de rotação acumulada
+            // Inicializa a matriz de rotação acumulada
         Matrix.setIdentityM(mAccumulatedRotation, 0);
     }
 
@@ -822,5 +853,4 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
             }
         }
     }
-
 }
