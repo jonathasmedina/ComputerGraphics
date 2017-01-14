@@ -7,6 +7,7 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.os.Environment;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -38,6 +39,7 @@ import javax.microedition.khronos.opengles.GL10;
 public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurfaceView.Renderer{
 
     private boolean POSSUI_TEXTURAS;
+    ObjActor objActor;
 
     String vertexShader, fragmentShader;
 
@@ -186,7 +188,7 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
         //recuperando camera, luz, ator
         ObjCamera objCamera = i.getObjCamera();
         ObjLight objLight = i.getObjLight();
-        ObjActor objActor = i.getObjActor();
+        objActor = i.getObjActor();
 
         //camera
         positionCam = objCamera.getPosition();
@@ -506,7 +508,8 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
         if (POSSUI_TEXTURAS) {
             File path = Environment.getExternalStoragePublicDirectory(
                     Environment.DIRECTORY_DOWNLOADS);
-            File file = new File(path, "textura12.jpg");
+
+            File file = new File(path, objActor.getNomeTextura());
 
                 // Make sure the Pictures directory exists.
                 path.mkdirs();
@@ -515,16 +518,15 @@ public class ActOpenGLESRenderizadorVBOTex extends Activity implements GLSurface
 
             try {
                 is = new FileInputStream(file);
-//                is.close();
+                mTextureDataHandle = TextureHelper.loadTextureInputStream(is);
+                is.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
 //            is = new FileInputStream("/sdcard/test2.png");
-            BufferedInputStream  buf = new BufferedInputStream(is);
 
-            mTextureDataHandle = TextureHelper.loadTextureInputStream(is);
 //            mTextureDataHandle = TextureHelper.loadTexture(mContexto, R.drawable.barrel);
             GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
         }

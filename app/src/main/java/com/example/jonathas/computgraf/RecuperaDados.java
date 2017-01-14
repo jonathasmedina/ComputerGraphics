@@ -18,6 +18,9 @@ import java.util.ArrayList;
 
 public class RecuperaDados implements Serializable{
 
+    private String urlText;
+    private String nomeTextura;
+
     ArrayList<Float> vertices = new ArrayList<>();
     ArrayList<Integer> triangles = new ArrayList<>();
     ArrayList<Integer> trianglesV = new ArrayList<>();
@@ -33,7 +36,6 @@ public class RecuperaDados implements Serializable{
     private ArrayList<Float> material = new ArrayList<>();
 
     private ArrayList<Float> textures = new ArrayList<>();
-
 
     public RecuperaDados(){
 
@@ -370,5 +372,25 @@ public class RecuperaDados implements Serializable{
         return color;
     }
 
+    public String getNomeTextura(JSONObject jsonObject2) throws JSONException {
+        JSONObject jsonObject;
+        jsonObject = jsonObject2.getJSONObject("material");
 
+        String nomeTextura = jsonObject.getString("map_kd");
+
+        String[] valorComSplit = nomeTextura.split("/");
+
+        for(String s : valorComSplit){
+            nomeTextura = s;
+        }
+        return nomeTextura;
+    }
+
+    public String getUrlText(JSONObject jsonObject2) throws JSONException {
+        JSONObject jsonObject;
+        jsonObject = jsonObject2.getJSONObject("material");
+
+        String url = jsonObject.getString("map_kd");
+        return url;
+    }
 }

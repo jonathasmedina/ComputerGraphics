@@ -2,6 +2,9 @@ package com.example.jonathas.computgraf;
 
 import android.os.Parcel;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -10,6 +13,10 @@ import java.util.ArrayList;
  */
 
 public class ObjActor implements Serializable {
+
+    private String urlText;
+    private String nomeTextura;
+
     private int numberOfVertices;
     private int numberOfNormals;
     private int numberOfTriangles;
@@ -153,6 +160,22 @@ public class ObjActor implements Serializable {
 
     public void setNumberOfColors(int numberOfColors) {
         this.numberOfColors = numberOfColors;
+    }
+
+    public String getUrlText() {
+        return urlText;
+    }
+
+    public void setUrlText(String urlText) {
+        this.urlText = urlText;
+    }
+
+    public String getNomeTextura() {
+        return nomeTextura;
+    }
+
+    public void setNomeTextura(String nomeTextura) {
+        this.nomeTextura = nomeTextura;
     }
 
 }

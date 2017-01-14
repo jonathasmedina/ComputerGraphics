@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.DownloadManager;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
@@ -183,18 +184,20 @@ public class MainActivity extends Activity {
                 objActor.setColors(recuperaDados.getColors(jsonObjectActor));
                 objActor.setMaterial(recuperaDados.getMaterial(jsonObjectActor));
                 objActor.setTextures(recuperaDados.getTextures(jsonObjectActor));
+                //dados da textura..url para download e nome do jpg
+                objActor.setUrlText(recuperaDados.getUrlText(jsonObjectActor));
+                objActor.setNomeTextura(recuperaDados.getNomeTextura(jsonObjectActor));
 
                 cena.setObjActor(objActor);
 
                 objJsonList.add(cena);
 
                 //download do arquivo de textura
-//                downloadTextura.downloadTextura(objActor.getArquivoTextura() ou url);
-                //validar se tem a informação antes de chamar o método...
-                /*if (url != null) {
-                * }*/
-                downloadTextura();
-                SystemClock.sleep(5000);
+                if (!objActor.getUrlText().equals(Config.SERVER_URL_TEXTURE)) {
+                    downloadTextura(objActor.getNomeTextura(), objActor.getUrlText());
+                    SystemClock.sleep(3000);
+                }
+
 
             } catch (JSONException e) {
                 Log.e("Erro", "Erro no parsing do JSON", e);
@@ -202,22 +205,21 @@ public class MainActivity extends Activity {
 
             return objJsonList;
         }
-
     }
 
-    public void downloadTextura(){
+    public void downloadTextura(String nomeText, String url){
             isStoragePermissionGranted();
-            String url = "https://thumbs.dreamstime.com/z/textura-da-pele-do-gato-21777149.jpg";
+
             DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-            request.setDescription("Some descrition");
-            request.setTitle("textura12.jpg");
+            request.setDescription("Textura de: "+url);
+            request.setTitle(nomeText);
 
             // in order for this if to run, you must use the android 3.2 to compile your app
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                 request.allowScanningByMediaScanner();
                 request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
             }
-            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "textura12.jpg");
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, nomeText);
 
             // get download service and enqueue file
             DownloadManager manager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
@@ -231,7 +233,6 @@ public class MainActivity extends Activity {
                 Log.v(TAG,"Permission is granted");
                 return true;
             } else {
-
                 Log.v(TAG,"Permission is revoked");
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                 return false;

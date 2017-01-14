@@ -45,7 +45,7 @@ public class MainActivityLista extends ListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        new DownloadJsonAsyncTask().execute("http://192.168.15.2/API/");
+        new DownloadJsonAsyncTask().execute(Config.SERVER_IP);
 //        new DownloadJsonAsyncTask().execute("http://10.3.1.157/API/");
 //        new DownloadJsonAsyncTask().execute("http://10.3.33.172/API/");
 
@@ -144,7 +144,7 @@ public class MainActivityLista extends ListActivity {
                     cenas.setDescription(item.getString("description"));
 //                    cenas.setUrl("http://10.3.1.157/API/id/"+item.getString("id")); //alterar-ip onde o serviço está hospedado
 //                    cenas.setUrl("http://10.3.33.172/API/id/"+item.getString("id")); //alterar-ip onde o serviço está hospedado
-                    cenas.setUrl("http://192.168.15.2/API/id/"+item.getString("id")); //alterar-ip onde o serviço está hospedado
+                    cenas.setUrl(Config.SERVER_IP+"id/"+item.getString("id")); //alterar-ip onde o serviço está hospedado
 
                     listaCenas.add(cenas); //add lista na lista de cenas que será retornada
                 }
