@@ -9,8 +9,12 @@ public class Config {
     public static final String SERVER_IP = "http://192.168.15.2/API/";
     public static final String SERVER_URL_TEXTURE = "http://192.168.15.2/textures/";
 
-    //IFMS
+    //IFMS - sem fio
 //    public static final String SERVER_IP = "http://10.3.1.157/API/";
 //    public static final String SERVER_URL_TEXTURE = "http://10.3.1.157/textures/";
+//
+//    IFMS - com fio
+//    public static final String SERVER_IP = "http://10.3.33.172/API/";
+//    public static final String SERVER_URL_TEXTURE = "http://10.3.33.172/textures/";
 
 }

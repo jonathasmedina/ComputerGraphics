@@ -22,6 +22,9 @@ public class ObjActor implements Serializable {
     private int numberOfTriangles;
     private int numberOfColors;
     private int numberOfTextures;
+    private int fio_arame;
+
+
     private ArrayList<Float> material = new ArrayList<>();
 
     //informações sobre as posições X,Y e Z de cada vértice; ex {"x":"-2.039150","y":"3.455440","z":"-5.975610"},{"x":"-2.007780","y":"3.431870","z":"-5.985680"}
@@ -176,6 +179,14 @@ public class ObjActor implements Serializable {
 
     public void setNomeTextura(String nomeTextura) {
         this.nomeTextura = nomeTextura;
+    }
+
+    public int getFio_arame() {
+        return fio_arame;
+    }
+
+    public void setFio_arame(int fio_arame) {
+        this.fio_arame = fio_arame;
     }
 
 }

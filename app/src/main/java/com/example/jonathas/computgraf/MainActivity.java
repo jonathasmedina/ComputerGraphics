@@ -168,6 +168,7 @@ public class MainActivity extends Activity {
                 objActor.setNumberOfTriangles(Integer.parseInt(jsonObjectActor.getString("numberOfTriangles")));
                 objActor.setNumberOfColors(Integer.parseInt(jsonObjectActor.getString("numberOfColors")));
                 objActor.setNumberOfTextures(Integer.parseInt(jsonObjectActor.getString("numberOfTextures")));
+                objActor.setFio_arame(Integer.parseInt(jsonObjectActor.getString("fio_arame")));
 
                 //recupera vértices (está em formato array de objetos: [...{...},{...},{...}]
                 objActor.setVertices(recuperaDados.getVertices(jsonObjectActor));

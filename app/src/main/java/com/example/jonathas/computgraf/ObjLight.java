@@ -12,6 +12,7 @@ import java.util.ArrayList;
 
 public class ObjLight implements Serializable{
     private ArrayList<Float> position = new ArrayList<>();
+    private ArrayList<Float> color = new ArrayList<>();
 
     public ArrayList<Float> getPosition() {
         return position;
@@ -29,6 +30,6 @@ public class ObjLight implements Serializable{
         this.position = position;
     }
 
-    private ArrayList<Float> color = new ArrayList<>();
+
 
 }

@@ -16,8 +16,12 @@ void main()
 	// Get a lighting direction vector from the light to the vertex.
     vec3 lightVector = normalize(u_LightPos - v_Position);
 
-	// Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
-	// pointing in the same direction then it will get max illumination.
+	/* Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
+	 pointing in the same direction then it will get max illumination.
+	Reflectância lambertiana:
+	    Para calcular o cosseno do ângulo entre a superfície e a luz, calcula-se o dot product do vetor da luz e a normal
+	da superfície. Quando os vetores estão normalizados, o dot product dos vetores retorna o cosseno do ângulo entre eles,
+	que é o necessário para calcular a reflectância lambertiana.*/
     float diffuse = max(dot(v_Normal, lightVector), 0.0);
 
 	// Add attenuation.
